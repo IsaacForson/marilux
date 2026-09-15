@@ -63,7 +63,7 @@ export default function PageHero({
                       <ChevronRight className="h-3 w-3 text-ivory/20" aria-hidden="true" />
                     )}
                     {c.href ? (
-                      <Link href={c.href} className="transition-colors hover:text-champagne">
+                      <Link href={c.href} className="transition-colors hover:text-accent">
                         {c.label}
                       </Link>
                     ) : (

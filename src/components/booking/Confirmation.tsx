@@ -66,11 +66,11 @@ export default function Confirmation({
           <span
             data-seal-ring
             aria-hidden="true"
-            className="absolute inset-0 rounded-full border border-champagne/25"
+            className="absolute inset-0 rounded-full border border-accent/25"
           />
           <span
             data-seal
-            className="absolute inset-3 grid place-items-center rounded-full border border-champagne/60 bg-champagne/10 text-champagne"
+            className="absolute inset-3 grid place-items-center rounded-full border border-accent/60 bg-accent/10 text-accent"
           >
             <Check className="h-7 w-7" strokeWidth={1.4} aria-hidden="true" />
           </span>
@@ -93,11 +93,11 @@ export default function Confirmation({
             reference is below — keep it handy.
           </p>
 
-          <p className="mt-8 inline-block rounded-full border border-champagne/35 px-6 py-3 font-sans text-sm tracking-luxe text-champagne">
+          <p className="mt-8 inline-block rounded-full border border-accent/35 px-6 py-3 font-sans text-sm tracking-luxe text-accent">
             {outcome.reference}
           </p>
 
-          <dl className="mx-auto mt-10 grid max-w-md gap-px overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.06] text-left">
+          <dl className="mx-auto mt-10 grid max-w-md gap-px overflow-hidden rounded-2xl border border-line bg-fill-2 text-left">
             {[
               { label: 'Treatment', value: summary.serviceName },
               { label: 'Specialist', value: summary.specialistName },
@@ -155,7 +155,7 @@ export default function Confirmation({
           <p className="mt-8">
             <Link
               href="/services"
-              className="font-sans text-2xs uppercase tracking-luxe text-ivory/40 underline decoration-champagne/40 underline-offset-8 transition-colors hover:text-champagne"
+              className="font-sans text-2xs uppercase tracking-luxe text-ivory/40 underline decoration-accent/40 underline-offset-8 transition-colors hover:text-accent"
             >
               Browse more treatments
             </Link>

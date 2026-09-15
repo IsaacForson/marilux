@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/data/services';
+import { themeFor } from '@/lib/data/images';
 import Reveal from '@/components/ui/Reveal';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Plate from '@/components/ui/Plate';
@@ -50,7 +51,8 @@ export default function Rooms() {
                 >
                   <Plate
                     alt={cat.name + ' at Marilux Beauty Bar'}
-                    seed={20 + i * 29}
+                    theme={themeFor(cat.slug)}
+                    index={i}
                     ratio={wide ? 'aspect-[16/11]' : 'aspect-[4/5] sm:aspect-[5/6]'}
                     scrim
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -69,7 +71,7 @@ export default function Rooms() {
                     }}
                   />
 
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 sm:p-7">
+                  <div className="on-media absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 sm:p-7">
                     <div>
                       <p
                         className="font-sans text-2xs uppercase tracking-luxe"
@@ -87,13 +89,13 @@ export default function Rooms() {
 
                     <span
                       aria-hidden="true"
-                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/15 text-ivory/70 transition-all duration-500 ease-luxe group-hover:border-champagne/70 group-hover:bg-champagne group-hover:text-ink"
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line-2 text-ivory/70 transition-all duration-500 ease-luxe group-hover:border-accent/70 group-hover:bg-champagne group-hover:text-onaccent"
                     >
                       <ArrowUpRight className="h-4 w-4" strokeWidth={1.4} />
                     </span>
                   </div>
 
-                  <span className="absolute right-6 top-6 font-sans text-2xs tracking-luxe text-ivory/30">
+                  <span className="on-media absolute right-6 top-6 font-sans text-2xs tracking-luxe text-ivory/40">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                 </Link>

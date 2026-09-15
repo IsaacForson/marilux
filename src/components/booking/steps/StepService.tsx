@@ -17,7 +17,7 @@ export default function StepService() {
     <fieldset>
       <legend className="sr-only">Choose a treatment in {category.name}</legend>
 
-      <div className="mb-8 rounded-2xl border border-white/[0.07] bg-white/[0.015] p-6">
+      <div className="mb-8 rounded-2xl border border-line bg-fill p-6">
         <p className="eyebrow mb-3" style={{ color: category.mood.accent }}>
           The {category.name} ritual
         </p>
@@ -46,7 +46,7 @@ export default function StepService() {
             description={s.description}
             trailing={
               <span className="text-right">
-                <span className="block whitespace-nowrap font-display text-lg text-champagne">
+                <span className="block whitespace-nowrap font-display text-lg text-accent">
                   {formatPrice(s)}
                 </span>
                 <span className="mt-1 block whitespace-nowrap font-sans text-2xs uppercase tracking-luxe text-ivory/30">

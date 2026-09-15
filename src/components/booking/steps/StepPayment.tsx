@@ -92,9 +92,9 @@ export default function StepPayment({
 
   return (
     <div>
-      <div className="mb-8 rounded-2xl border border-champagne/25 bg-champagne/[0.05] px-6 py-6 text-center">
+      <div className="mb-8 rounded-2xl border border-accent/25 bg-accent/[0.05] px-6 py-6 text-center">
         <p className="eyebrow mb-3">Deposit due now</p>
-        <p className="font-display text-[clamp(2.6rem,7vw,4rem)] font-light leading-none text-champagne">
+        <p className="font-display text-[clamp(2.6rem,7vw,4rem)] font-light leading-none text-accent">
           {GHS(resolved.deposit)}
         </p>
         <p className="mt-4 text-sm text-ivory/50">
@@ -111,8 +111,8 @@ export default function StepPayment({
               className={cn(
                 'cursor-pointer rounded-2xl border p-5 transition-all duration-500 ease-luxe',
                 provider === p.id
-                  ? 'border-champagne/70 bg-champagne/[0.07]'
-                  : 'border-white/[0.09] hover:border-white/20',
+                  ? 'border-accent/70 bg-accent/[0.07]'
+                  : 'border-line hover:border-line-3',
               )}
             >
               <input
@@ -134,7 +134,7 @@ export default function StepPayment({
                 {p.methods.map((m) => (
                   <span
                     key={m}
-                    className="rounded-full border border-white/10 px-2.5 py-1 text-2xs text-ivory/40"
+                    className="rounded-full border border-line-2 px-2.5 py-1 text-2xs text-ivory/40"
                   >
                     {m}
                   </span>
@@ -167,7 +167,7 @@ export default function StepPayment({
       </Button>
 
       {message && (
-        <p role="alert" className="mt-4 text-center text-sm text-rosegold-light">
+        <p role="alert" className="mt-4 text-center text-sm text-danger">
           {message}
         </p>
       )}
@@ -183,7 +183,7 @@ export default function StepPayment({
           href={whatsappLink('Hello Marilux, I would like to pay my deposit another way.')}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-champagne underline decoration-champagne/40 underline-offset-4"
+          className="text-accent underline decoration-accent/40 underline-offset-4"
         >
           Message us on {SITE.contact.phone}
         </a>{' '}

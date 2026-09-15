@@ -51,7 +51,7 @@ export default function SummaryPanel() {
         </dl>
 
         {service && (
-          <div className="mt-6 space-y-3 border-t border-white/[0.09] pt-5">
+          <div className="mt-6 space-y-3 border-t border-line pt-5">
             <div className="flex items-baseline justify-between">
               <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/30">
                 Total
@@ -59,10 +59,10 @@ export default function SummaryPanel() {
               <span className="font-display text-lg text-ivory">{formatPrice(service)}</span>
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="font-sans text-2xs uppercase tracking-luxe text-champagne">
+              <span className="font-sans text-2xs uppercase tracking-luxe text-accent">
                 Deposit now
               </span>
-              <span className="font-display text-xl text-champagne">
+              <span className="font-display text-xl text-accent">
                 {GHS(resolved.deposit)}
               </span>
             </div>

@@ -25,7 +25,7 @@ export default function Accordion({
   const [open, setOpen] = useState<string | null>(defaultOpen ?? null);
 
   return (
-    <div className={cn('divide-y divide-white/[0.07] border-y border-white/[0.07]', className)}>
+    <div className={cn('divide-y divide-line border-y border-line', className)}>
       {items.map((item) => {
         const isOpen = open === item.id;
         const body = Array.isArray(item.body) ? item.body : [item.body];
@@ -44,7 +44,7 @@ export default function Accordion({
                   <span
                     className={cn(
                       'display-sm transition-colors duration-500',
-                      isOpen ? 'text-champagne' : 'text-ivory group-hover:text-champagne/80',
+                      isOpen ? 'text-accent' : 'text-ivory group-hover:text-accent/80',
                     )}
                   >
                     {item.title}
@@ -57,7 +57,7 @@ export default function Accordion({
                 </span>
                 <Plus
                   className={cn(
-                    'mt-1.5 h-5 w-5 shrink-0 text-champagne/70 transition-transform duration-500 ease-luxe',
+                    'mt-1.5 h-5 w-5 shrink-0 text-accent/70 transition-transform duration-500 ease-luxe',
                     isOpen && 'rotate-45',
                   )}
                   strokeWidth={1.25}

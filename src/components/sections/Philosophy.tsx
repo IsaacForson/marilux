@@ -62,13 +62,13 @@ export default function Philosophy() {
     <section
       ref={root}
       id="philosophy"
-      className="relative border-y border-white/[0.07] py-24 sm:py-36"
+      className="relative border-y border-line py-24 sm:py-36"
       aria-labelledby="philosophy-title"
     >
       <div className="shell">
         <Reveal y={14}>
           <p className="eyebrow mb-10 flex items-center gap-3">
-            <span className="h-px w-10 bg-champagne/45" aria-hidden="true" />
+            <span className="h-px w-10 bg-accent/45" aria-hidden="true" />
             Our philosophy
           </p>
         </Reveal>
@@ -87,7 +87,7 @@ export default function Philosophy() {
         </h2>
       </div>
 
-      <div className="mt-20 border-t border-white/[0.07] py-6">
+      <div className="mt-20 border-t border-line py-6">
         <Marquee
           items={PROOF}
           className="font-sans text-2xs uppercase tracking-wide2 text-ivory/45"

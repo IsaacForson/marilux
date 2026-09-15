@@ -7,8 +7,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        // Confirmation pages carry booking references and must stay out of search.
-        disallow: ['/api/', '/booking/confirm'],
+        // The dashboard is private, and confirmation pages carry booking
+        // references — neither belongs in a search index.
+        disallow: ['/api/', '/admin', '/admin/', '/booking/confirm'],
       },
     ],
     sitemap: SITE.url + '/sitemap.xml',

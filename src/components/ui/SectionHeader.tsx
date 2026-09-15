@@ -32,7 +32,7 @@ export default function SectionHeader({
       {eyebrow && (
         <Reveal y={14} duration={0.7}>
           <div className="mb-5 flex items-center gap-3">
-            <span className="h-px w-8 bg-champagne/45" aria-hidden="true" />
+            <span className="h-px w-8 bg-accent/45" aria-hidden="true" />
             <span className="eyebrow">{eyebrow}</span>
           </div>
         </Reveal>

@@ -129,12 +129,12 @@ function FlowInner() {
         </AnimatePresence>
 
         {/* Controls. The payment step owns its own primary action. */}
-        <div className="mt-12 flex items-center justify-between gap-4 border-t border-white/[0.07] pt-7">
+        <div className="mt-12 flex items-center justify-between gap-4 border-t border-line pt-7">
           <button
             type="button"
             onClick={back}
             disabled={step === 0}
-            className="group inline-flex items-center gap-2.5 font-sans text-2xs uppercase tracking-luxe text-ivory/45 transition-colors duration-500 hover:text-champagne disabled:pointer-events-none disabled:opacity-25"
+            className="group inline-flex items-center gap-2.5 font-sans text-2xs uppercase tracking-luxe text-ivory/45 transition-colors duration-500 hover:text-accent disabled:pointer-events-none disabled:opacity-25"
           >
             <ArrowLeft
               className="h-3.5 w-3.5 transition-transform duration-500 group-hover:-translate-x-0.5"
@@ -152,8 +152,8 @@ function FlowInner() {
               className={
                 'group inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 font-sans text-2xs uppercase tracking-luxe transition-all duration-500 ease-luxe ' +
                 (canAdvance
-                  ? 'bg-champagne text-ink hover:bg-champagne-light'
-                  : 'border border-white/12 text-ivory/30')
+                  ? 'bg-champagne text-onaccent hover:bg-champagne-light'
+                  : 'border border-line-2 text-ivory/30')
               }
             >
               Continue

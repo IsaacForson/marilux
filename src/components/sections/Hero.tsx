@@ -89,7 +89,7 @@ export default function Hero() {
             data-hero-fade
             className="eyebrow mb-7 flex items-center gap-3 opacity-0"
           >
-            <span className="h-px w-10 bg-champagne/45" aria-hidden="true" />
+            <span className="h-px w-10 bg-accent/45" aria-hidden="true" />
             Hebron, Accra — est. {SITE.founded}
           </p>
 
@@ -132,7 +132,7 @@ export default function Hero() {
               <div key={m.label} data-hero-mark data-hero-fade className="opacity-0">
                 <dt className="sr-only">{m.label}</dt>
                 <dd>
-                  <span className="block font-display text-3xl font-light text-champagne sm:text-4xl">
+                  <span className="block font-display text-3xl font-light text-accent sm:text-4xl">
                     {m.value}
                   </span>
                   <span className="mt-1.5 block font-sans text-2xs uppercase tracking-luxe text-ivory/40">
@@ -151,8 +151,10 @@ export default function Hero() {
             className="absolute right-[6%] top-0 w-[62%] gpu"
           >
             <Plate
-              alt="A guest in the Marilux studio, warm light across the face"
-              seed={34}
+              theme="portrait"
+              index={0}
+              priority
+              sizes="(max-width: 1024px) 0px, 34vw"
               ratio="aspect-[3/4]"
               className="shadow-[0_50px_120px_-45px_rgba(0,0,0,0.95)]"
             />
@@ -163,8 +165,9 @@ export default function Hero() {
             className="absolute bottom-4 left-0 w-[52%] animate-float gpu"
           >
             <Plate
-              alt="Detail of hand-finished brow artistry"
-              seed={14}
+              theme="makeup"
+              index={1}
+              sizes="(max-width: 1024px) 0px, 28vw"
               ratio="aspect-[4/5]"
               className="shadow-[0_50px_120px_-45px_rgba(0,0,0,0.95)]"
             />
@@ -177,7 +180,7 @@ export default function Hero() {
             <p className="font-display text-lg leading-snug text-ivory">
               &ldquo;They measured my face for twenty minutes before they touched me.&rdquo;
             </p>
-            <p className="mt-3 font-sans text-2xs uppercase tracking-luxe text-champagne/70">
+            <p className="mt-3 font-sans text-2xs uppercase tracking-luxe text-accent/70">
               Adwoa M. — East Legon
             </p>
           </div>
@@ -192,10 +195,10 @@ export default function Hero() {
         className="group absolute bottom-7 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2.5 opacity-0 sm:flex"
         aria-label="Scroll to content"
       >
-        <span className="font-sans text-2xs uppercase tracking-wide2 text-ivory/35 transition-colors group-hover:text-champagne">
+        <span className="font-sans text-2xs uppercase tracking-wide2 text-ivory/35 transition-colors group-hover:text-accent">
           Scroll
         </span>
-        <span className="grid h-9 w-9 place-items-center rounded-full border border-white/12 text-ivory/50 transition-all duration-500 group-hover:translate-y-0.5 group-hover:border-champagne/60 group-hover:text-champagne">
+        <span className="grid h-9 w-9 place-items-center rounded-full border border-line-2 text-ivory/50 transition-all duration-500 group-hover:translate-y-0.5 group-hover:border-accent/60 group-hover:text-accent">
           <ArrowDown className="h-3.5 w-3.5" strokeWidth={1.4} aria-hidden="true" />
         </span>
       </button>

@@ -1,14 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Jost } from 'next/font/google';
 import { SITE } from '@/lib/data/site';
-import { buildMetadata, businessJsonLd } from '@/lib/seo';
-import JsonLd from '@/components/seo/JsonLd';
-import SmoothScroll from '@/components/providers/SmoothScroll';
-import Preloader from '@/components/providers/Preloader';
-import Cursor from '@/components/providers/Cursor';
-import Navigation from '@/components/layout/Navigation';
-import Footer from '@/components/layout/Footer';
-import FloatingActions from '@/components/layout/FloatingActions';
+import { buildMetadata } from '@/lib/seo';
+import ThemeProvider, { themeInitScript } from '@/components/providers/ThemeProvider';
 import './globals.css';
 
 const display = Cormorant_Garamond({
@@ -45,26 +39,25 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0B0A09',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0B0A09' },
+    { media: '(prefers-color-scheme: light)', color: '#FAF7F2' },
+  ],
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  colorScheme: 'dark',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GH" className={display.variable + ' ' + sans.variable}>
+    <html lang="en-GH" className={display.variable + ' ' + sans.variable} suppressHydrationWarning>
+      <head>
+        {/* Sets data-theme before first paint so there is no flash of the
+            wrong palette. Static string, no user input. */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
-        <JsonLd data={businessJsonLd()} />
-        <Preloader />
-        <Cursor />
-        <SmoothScroll>
-          <Navigation />
-          <main id="main">{children}</main>
-          <Footer />
-          <FloatingActions />
-        </SmoothScroll>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

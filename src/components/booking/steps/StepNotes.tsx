@@ -52,7 +52,7 @@ export default function StepNotes() {
             key={p}
             type="button"
             onClick={() => append(p)}
-            className="rounded-full border border-white/[0.09] px-4 py-2.5 text-sm text-ivory/60 transition-all duration-500 ease-luxe hover:border-champagne/50 hover:text-champagne"
+            className="rounded-full border border-line px-4 py-2.5 text-sm text-ivory/60 transition-all duration-500 ease-luxe hover:border-accent/50 hover:text-accent"
           >
             {p}
           </button>
@@ -60,7 +60,7 @@ export default function StepNotes() {
       </div>
 
       <div className="mt-10 rounded-2xl border border-rosegold/20 bg-rosegold/[0.05] p-6">
-        <p className="eyebrow mb-3 text-rosegold-light">Please tell us</p>
+        <p className="eyebrow mb-3 text-danger">Please tell us</p>
         <p className="max-w-[62ch] text-sm leading-relaxed text-ivory/60">
           Allergies, pregnancy, skin sensitivities, medical conditions, current medication and any
           cosmetic procedure in the last six weeks. Several of our pigments and actives are

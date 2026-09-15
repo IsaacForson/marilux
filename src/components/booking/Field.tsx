@@ -33,7 +33,7 @@ export default function Field({
       <label htmlFor={id} className="eyebrow mb-2.5">
         {label}
         {required && (
-          <span className="ml-1 text-rosegold-light" aria-hidden="true">
+          <span className="ml-1 text-danger" aria-hidden="true">
             *
           </span>
         )}
@@ -44,10 +44,10 @@ export default function Field({
         'aria-describedby': describedBy,
         'aria-invalid': Boolean(error),
         className: cn(
-          'w-full rounded-xl border bg-white/[0.02] px-4 py-3.5 text-[0.95rem] text-ivory placeholder:text-ivory/25 transition-colors duration-500 focus:outline-none focus:ring-0',
+          'w-full rounded-xl border bg-fill px-4 py-3.5 text-[0.95rem] text-ivory placeholder:text-ivory/25 transition-colors duration-500 focus:outline-none focus:ring-0',
           error
             ? 'border-rosegold/70 focus:border-rosegold'
-            : 'border-white/[0.09] focus:border-champagne/60',
+            : 'border-line focus:border-accent/60',
         ),
       })}
 
@@ -57,7 +57,7 @@ export default function Field({
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="mt-2 text-xs text-rosegold-light">
+        <p id={errorId} role="alert" className="mt-2 text-xs text-danger">
           {error}
         </p>
       )}

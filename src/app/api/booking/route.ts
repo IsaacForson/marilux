@@ -4,6 +4,7 @@ import { getCategory, getService, depositFor } from '@/lib/data/services';
 import { SPECIALISTS } from '@/lib/data/team';
 import { getAvailability, isPastSlot } from '@/lib/booking/availability';
 import { notifyAll } from '@/lib/integrations/notify';
+import { bookings } from '@/lib/store/bookings';
 import { clientKey, rateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
@@ -16,6 +17,11 @@ export const dynamic = 'force-dynamic';
  * catalogue rather than trusted from the request body — a client could
  * otherwise submit its own deposit figure.
  */
+/** Do two appointments on the same day collide? */
+function overlaps(aStart: number, aMins: number, bStart: number, bMins: number) {
+  return aStart < bStart + bMins && bStart < aStart + aMins;
+}
+
 export async function POST(req: Request) {
   const limit = rateLimit(clientKey(req, 'booking'), 5, 60_000);
   if (!limit.ok) {
@@ -85,6 +91,24 @@ export async function POST(req: Request) {
     );
   }
 
+  // Double-booking guard: the availability grid is advisory, the store is
+  // authoritative. Two guests submitting the same slot seconds apart must not
+  // both succeed.
+  const sameDay = await bookings.activeOn(input.date);
+  const clash = sameDay.find(
+    (b) =>
+      b.specialistSlug === input.specialistSlug &&
+      input.specialistSlug !== 'any' &&
+      overlaps(b.time, b.duration, input.time, service.duration),
+  );
+  if (clash) {
+    return NextResponse.json(
+      { ok: false, error: 'That time has just been taken. Please choose another.' },
+      { status: 409 },
+    );
+  }
+
+  const now = new Date().toISOString();
   const record: BookingRecord = {
     ...input,
     reference: makeReference(),
@@ -95,13 +119,27 @@ export async function POST(req: Request) {
     price: service.price,
     deposit: depositFor(service.price),
     depositStatus: 'pending',
-    createdAt: new Date().toISOString(),
+    status: 'pending',
+    createdAt: now,
+    updatedAt: now,
   };
 
-  // TODO(persistence): write `record` to the studio's datastore here so the
-  // booking survives a restart and can be reconciled against the payment
-  // webhook. Notification is deliberately independent of that write.
+  // Persist first: a booking the studio cannot see is worse than one that was
+  // not announced, and notification failures must not lose the record.
+  try {
+    await bookings.create(record);
+  } catch (error) {
+    console.error('[booking] could not persist ' + record.reference, error);
+    return NextResponse.json(
+      { ok: false, error: 'We could not save that booking. Please try again.' },
+      { status: 500 },
+    );
+  }
+
   const deliveries = await notifyAll(record);
+  if (deliveries.some((d) => d.channel === 'email' && d.target === 'customer' && d.delivered)) {
+    await bookings.update(record.reference, { confirmationSentAt: new Date().toISOString() });
+  }
 
   const failures = deliveries.filter((d) => !d.delivered);
   if (failures.length) {

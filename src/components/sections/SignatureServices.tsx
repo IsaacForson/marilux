@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Clock } from 'lucide-react';
 import { FEATURED_SERVICES, formatDuration, formatPrice } from '@/lib/data/services';
 import Reveal from '@/components/ui/Reveal';
+import { themeFor } from '@/lib/data/images';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Plate from '@/components/ui/Plate';
 import { ButtonLink } from '@/components/ui/Button';
@@ -50,7 +51,7 @@ export default function SignatureServices() {
               type="button"
               onClick={() => nudge(-1)}
               aria-label="Previous treatments"
-              className="grid h-12 w-12 place-items-center rounded-full border border-white/12 text-ivory/70 transition-all duration-500 hover:border-champagne/60 hover:text-champagne"
+              className="grid h-12 w-12 place-items-center rounded-full border border-line-2 text-ivory/70 transition-all duration-500 hover:border-accent/60 hover:text-accent"
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={1.4} aria-hidden="true" />
             </button>
@@ -58,7 +59,7 @@ export default function SignatureServices() {
               type="button"
               onClick={() => nudge(1)}
               aria-label="More treatments"
-              className="grid h-12 w-12 place-items-center rounded-full border border-white/12 text-ivory/70 transition-all duration-500 hover:border-champagne/60 hover:text-champagne"
+              className="grid h-12 w-12 place-items-center rounded-full border border-line-2 text-ivory/70 transition-all duration-500 hover:border-accent/60 hover:text-accent"
             >
               <ArrowRight className="h-4 w-4" strokeWidth={1.4} aria-hidden="true" />
             </button>
@@ -84,20 +85,21 @@ export default function SignatureServices() {
               >
                 <Plate
                   alt={service.name}
-                  seed={48 + i * 33}
+                  theme={themeFor(service.categorySlug)}
+                  index={i}
                   ratio="aspect-[4/5]"
                   scrim
                   sizes="(max-width: 640px) 80vw, (max-width: 1024px) 42vw, 22rem"
                   className="transition-transform duration-[1100ms] ease-luxe group-hover:scale-[1.05]"
                 >
-                  <span className="absolute left-5 top-5 rounded-full border border-white/15 bg-ink/40 px-3 py-1.5 font-sans text-2xs uppercase tracking-luxe text-ivory/70 backdrop-blur-md">
+                  <span className="absolute left-5 top-5 rounded-full border border-line-2 bg-ink/40 px-3 py-1.5 font-sans text-2xs uppercase tracking-luxe text-ivory/70 backdrop-blur-md">
                     {service.category.split(' ')[0].replace(',', '')}
                   </span>
                 </Plate>
 
                 <div className="flex items-start justify-between gap-4 pt-5">
                   <div>
-                    <h3 className="font-display text-xl font-light leading-snug text-ivory transition-colors duration-500 group-hover:text-champagne">
+                    <h3 className="font-display text-xl font-light leading-snug text-ivory transition-colors duration-500 group-hover:text-accent">
                       {service.name}
                     </h3>
                     <p className="mt-2 flex items-center gap-2 font-sans text-2xs uppercase tracking-luxe text-ivory/40">
@@ -105,7 +107,7 @@ export default function SignatureServices() {
                       {formatDuration(service.duration)}
                     </p>
                   </div>
-                  <span className="whitespace-nowrap pt-1 font-display text-lg text-champagne">
+                  <span className="whitespace-nowrap pt-1 font-display text-lg text-accent">
                     {formatPrice(service)}
                   </span>
                 </div>

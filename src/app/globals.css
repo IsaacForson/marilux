@@ -3,14 +3,140 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --ink: 11 10 9;
-    --soft: 251 250 248;
-    --ivory: 244 239 231;
-    --champagne: 217 188 140;
-    --rosegold: 192 138 126;
+  /* ---- Dark, the default --------------------------------------------------
+   * Themes are a set of variable values; every Tailwind token in
+   * tailwind.config.ts reads from here, so no component knows which theme
+   * is active.
+   * ------------------------------------------------------------------------ */
+  :root,
+  [data-theme='dark'] {
+    color-scheme: dark;
+
+    --c-ink: 11 10 9;
+    --c-ink-800: 20 18 17;
+    --c-ink-700: 29 26 24;
+    --c-ink-600: 42 37 34;
+    --c-ink-500: 59 53 50;
+    --c-ink-400: 90 82 77;
+    --c-ink-300: 133 123 116;
+
+    --c-fg: 244 239 231;
+    --c-fg-deep: 237 229 217;
+
+    --c-accent: 217 188 140;
+    --c-accent-light: 235 214 179;
+    --c-accent-deep: 185 152 99;
+
+    --c-danger: 220 175 164;
+    --c-success: 150 190 155;
+    --c-warn: 226 184 116;
+
+    --c-line: 255 255 255;
+    --a-line: 0.07;
+    --a-line-2: 0.12;
+    --a-line-3: 0.2;
+
+    --c-fill: 255 255 255;
+    --a-fill: 0.018;
+    --a-fill-2: 0.05;
+
+    --gold-sheen: linear-gradient(
+      100deg,
+      #b99863 0%,
+      #ebd6b3 28%,
+      #d9bc8c 46%,
+      #f6ecd8 62%,
+      #b99863 100%
+    );
+
+    --glass-bg: linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.055) 0%,
+      rgb(255 255 255 / 0.018) 55%,
+      rgb(255 255 255 / 0.04) 100%
+    );
+    --glass-border: rgb(255 255 255 / 0.08);
+    --grain-opacity: 0.085;
+    --grain-blend: overlay;
+    --scroll-thumb: #2a2522;
+    --scroll-thumb-hover: #3b3532;
+
     --nav-h: 76px;
     --edge: clamp(1.25rem, 5vw, 5.5rem);
+  }
+
+  /* ---- Light -------------------------------------------------------------
+   * Warm ivory rather than white: the brand is champagne and nude, and a
+   * pure-white ground would make the gold look dirty. Gold darkens so type
+   * and hairlines keep their contrast against it.
+   * ------------------------------------------------------------------------ */
+  [data-theme='light'] {
+    color-scheme: light;
+
+    --c-ink: 250 247 242;
+    --c-ink-800: 244 239 231;
+    --c-ink-700: 237 229 217;
+    --c-ink-600: 227 211 193;
+    --c-ink-500: 201 174 147;
+    --c-ink-400: 150 134 119;
+    --c-ink-300: 112 100 90;
+
+    --c-fg: 26 22 19;
+    --c-fg-deep: 11 10 9;
+
+    --c-accent: 138 102 42;
+    --c-accent-light: 168 130 66;
+    --c-accent-deep: 105 76 30;
+
+    --c-danger: 158 62 48;
+    --c-success: 46 106 62;
+    --c-warn: 146 101 20;
+
+    --c-line: 40 32 24;
+    --a-line: 0.1;
+    --a-line-2: 0.16;
+    --a-line-3: 0.28;
+
+    --c-fill: 40 32 24;
+    --a-fill: 0.028;
+    --a-fill-2: 0.06;
+
+    --gold-sheen: linear-gradient(
+      100deg,
+      #6c4c1c 0%,
+      #a8823f 26%,
+      #8a662a 46%,
+      #c19a54 64%,
+      #6c4c1c 100%
+    );
+
+    --glass-bg: linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.85) 0%,
+      rgb(255 255 255 / 0.62) 55%,
+      rgb(255 255 255 / 0.78) 100%
+    );
+    --glass-border: rgb(40 32 24 / 0.1);
+    --grain-opacity: 0.05;
+    --grain-blend: multiply;
+    --scroll-thumb: #d8cec0;
+    --scroll-thumb-hover: #c2b5a3;
+  }
+
+  /* Content laid over photography always reads as light-on-dark, whichever
+     theme the page is in — the scrim beneath it does not change. */
+  .on-media {
+    --c-fg: 251 250 248;
+    --c-fg-deep: 255 255 255;
+    --c-ink: 11 10 9;
+    --c-ink-800: 20 18 17;
+    --c-accent: 217 188 140;
+    --c-accent-light: 235 214 179;
+    --c-line: 255 255 255;
+    --a-line: 0.1;
+    --a-line-2: 0.16;
+    --a-line-3: 0.24;
+    --c-fill: 255 255 255;
   }
 
   * {
@@ -26,6 +152,9 @@
     @apply bg-ink text-ivory font-sans antialiased;
     overflow-x: hidden;
     text-rendering: optimizeLegibility;
+    transition:
+      background-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   /* Lenis */
@@ -41,12 +170,12 @@
   }
 
   ::selection {
-    background: rgb(var(--champagne) / 0.28);
-    color: #fbfaf8;
+    background: rgb(var(--c-accent) / 0.26);
+    color: rgb(var(--c-fg-deep));
   }
 
   :focus-visible {
-    outline: 1px solid rgb(var(--champagne) / 0.9);
+    outline: 2px solid rgb(var(--c-accent) / 0.9);
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -56,14 +185,14 @@
     width: 9px;
   }
   ::-webkit-scrollbar-track {
-    background: #0b0a09;
+    background: rgb(var(--c-ink));
   }
   ::-webkit-scrollbar-thumb {
-    background: #2a2522;
+    background: var(--scroll-thumb);
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #3b3532;
+    background: var(--scroll-thumb-hover);
   }
 
   h1, h2, h3, h4 {
@@ -98,7 +227,7 @@
     font-size: clamp(1.5rem, 2.6vw, 2.35rem);
   }
   .eyebrow {
-    @apply font-sans text-[0.66rem] uppercase tracking-wide2 text-champagne/70;
+    @apply font-sans text-[0.66rem] uppercase tracking-wide2 text-accent/80;
     font-weight: 500;
   }
   .lede {
@@ -108,18 +237,13 @@
 
   /* ---- Surfaces ---- */
   .glass {
-    background: linear-gradient(
-      145deg,
-      rgb(255 255 255 / 0.055) 0%,
-      rgb(255 255 255 / 0.018) 55%,
-      rgb(255 255 255 / 0.04) 100%
-    );
-    border: 1px solid rgb(255 255 255 / 0.08);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     backdrop-filter: blur(18px) saturate(120%);
     -webkit-backdrop-filter: blur(18px) saturate(120%);
   }
   .hairline {
-    @apply border-white/[0.07];
+    @apply border-line;
   }
 
   .gold-text {
@@ -131,12 +255,7 @@
   }
   .gold-rule {
     height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgb(var(--champagne) / 0.55),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgb(var(--c-accent) / 0.55), transparent);
   }
 
   /* Soft cinematic light bloom */
@@ -153,8 +272,8 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.085;
-    mix-blend-mode: overlay;
+    opacity: var(--grain-opacity);
+    mix-blend-mode: var(--grain-blend);
     background-size: 180px 180px;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }

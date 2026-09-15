@@ -71,7 +71,7 @@ export default function ContactForm() {
         <button
           type="button"
           onClick={() => setState('idle')}
-          className="mt-7 font-sans text-2xs uppercase tracking-luxe text-champagne underline decoration-champagne/40 underline-offset-8"
+          className="mt-7 font-sans text-2xs uppercase tracking-luxe text-accent underline decoration-accent/40 underline-offset-8"
         >
           Send another message
         </button>
@@ -179,7 +179,7 @@ export default function ContactForm() {
         </Button>
 
         {state === 'error' && (
-          <p role="alert" className="mt-4 text-sm text-rosegold-light">
+          <p role="alert" className="mt-4 text-sm text-danger">
             That did not go through. Please try again, or message us on WhatsApp.
           </p>
         )}

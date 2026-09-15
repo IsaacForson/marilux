@@ -2,10 +2,23 @@ import 'server-only';
 import { SITE } from '@/lib/data/site';
 import type { BookingRecord } from '@/lib/booking/types';
 import type { DeliveryResult, NotificationAdapter } from './types';
+import { sendMail, smtpConfigured } from './smtp';
 import { customerHtml, customerPlainText, ownerHtml, ownerPlainText } from './format';
 
 /**
- * Gmail delivery via the Gmail API.
+ * Email delivery.
+ *
+ * Two transports, tried in order:
+ *   1. SMTP — a Gmail App Password (or any provider). Simplest to set up, and
+ *      what most studios will use.
+ *   2. Gmail API via OAuth2 — no app password needed, and sent mail lands in
+ *      the studio's own Sent folder.
+ *
+ * Whichever is configured wins; if both are, SMTP is used because it has
+ * fewer moving parts.
+ *
+ * ---
+ * Gmail API notes.
  *
  * Uses an OAuth2 refresh token belonging to the studio's Google account, which
  * avoids app passwords and keeps sent mail in the studio's own Sent folder.
@@ -21,6 +34,10 @@ class GmailAdapter implements NotificationAdapter {
   readonly id = 'gmail';
 
   isConfigured() {
+    return smtpConfigured() || this.gmailApiConfigured();
+  }
+
+  private gmailApiConfigured() {
     return Boolean(
       process.env.GOOGLE_CLIENT_ID &&
         process.env.GOOGLE_CLIENT_SECRET &&
@@ -75,8 +92,24 @@ class GmailAdapter implements NotificationAdapter {
         channel: 'email',
         target,
         delivered: false,
-        detail: 'Gmail is not configured (GOOGLE_CLIENT_ID / SECRET / REFRESH_TOKEN missing).',
+        detail:
+          'No email transport configured. Set SMTP_HOST/SMTP_USER/SMTP_PASSWORD, ' +
+          'or the Gmail API variables.',
       };
+    }
+
+    if (smtpConfigured()) {
+      try {
+        await sendMail({ to, subject, text, html, replyTo });
+        return { channel: 'email', target, delivered: true };
+      } catch (error) {
+        return {
+          channel: 'email',
+          target,
+          delivered: false,
+          detail: 'SMTP: ' + (error instanceof Error ? error.message : 'send failed'),
+        };
+      }
     }
 
     try {

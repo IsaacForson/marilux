@@ -24,7 +24,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative overflow-hidden border-t border-white/[0.07] bg-ink">
+    <footer className="relative overflow-hidden border-t border-line bg-ink">
       <div
         aria-hidden="true"
         className="aura absolute -left-40 top-0 h-[560px] w-[560px]"
@@ -33,7 +33,7 @@ export default function Footer() {
 
       <div className="shell relative py-20 sm:py-28">
         {/* Closing invitation */}
-        <div className="grid gap-12 border-b border-white/[0.07] pb-16 lg:grid-cols-[1.25fr,0.75fr] lg:items-end">
+        <div className="grid gap-12 border-b border-line pb-16 lg:grid-cols-[1.25fr,0.75fr] lg:items-end">
           <div>
             <Reveal y={14}>
               <span className="eyebrow">Ready when you are</span>
@@ -80,7 +80,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/10 text-ivory/60 transition-all duration-500 ease-luxe hover:-translate-y-0.5 hover:border-champagne/60 hover:text-champagne"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-line-2 text-ivory/60 transition-all duration-500 ease-luxe hover:-translate-y-0.5 hover:border-accent/60 hover:text-accent"
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
                 </a>
@@ -114,12 +114,12 @@ export default function Footer() {
             <address className="space-y-3 text-sm not-italic text-ivory/55">
               <p>{SITE.address.display}</p>
               <p>
-                <a href={telLink} className="transition-colors hover:text-champagne">
+                <a href={telLink} className="transition-colors hover:text-accent">
                   {SITE.contact.phone}
                 </a>
               </p>
               <p>
-                <a href={mailLink} className="break-all transition-colors hover:text-champagne">
+                <a href={mailLink} className="break-all transition-colors hover:text-accent">
                   {SITE.contact.email}
                 </a>
               </p>
@@ -128,7 +128,7 @@ export default function Footer() {
             <h2 className="eyebrow mb-4 mt-8">Hours</h2>
             <dl className="space-y-2 text-sm text-ivory/55">
               {SITE.hours.map((h) => (
-                <div key={h.days} className="flex justify-between gap-4 border-b border-white/5 pb-2">
+                <div key={h.days} className="flex justify-between gap-4 border-b border-line pb-2">
                   <dt>{h.days}</dt>
                   <dd className="whitespace-nowrap text-ivory/75">
                     {h.open} – {h.close}
@@ -141,15 +141,15 @@ export default function Footer() {
 
         <Newsletter />
 
-        <div className="mt-14 flex flex-col gap-4 border-t border-white/[0.07] pt-8 text-2xs uppercase tracking-luxe text-ivory/35 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 flex flex-col gap-4 border-t border-line pt-8 text-2xs uppercase tracking-luxe text-ivory/35 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {SITE.name}. All rights reserved.
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link href="/booking#policy" className="transition-colors hover:text-champagne">
+            <Link href="/booking#policy" className="transition-colors hover:text-accent">
               Booking policy
             </Link>
-            <Link href="/contact" className="transition-colors hover:text-champagne">
+            <Link href="/contact" className="transition-colors hover:text-accent">
               Careers & enquiries
             </Link>
             <span>Made in Accra</span>
@@ -175,7 +175,7 @@ function FooterColumn({
           <li key={l.href}>
             <Link
               href={l.href}
-              className="group inline-flex items-center gap-2 text-sm text-ivory/55 transition-colors duration-500 hover:text-champagne"
+              className="group inline-flex items-center gap-2 text-sm text-ivory/55 transition-colors duration-500 hover:text-accent"
             >
               <span
                 aria-hidden="true"

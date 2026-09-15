@@ -40,7 +40,7 @@ export default function LocationSection() {
             <Reveal y={18}>
               <div className="flex gap-4">
                 <MapPin
-                  className="mt-0.5 h-4 w-4 shrink-0 text-champagne"
+                  className="mt-0.5 h-4 w-4 shrink-0 text-accent"
                   strokeWidth={1.4}
                   aria-hidden="true"
                 />
@@ -54,7 +54,7 @@ export default function LocationSection() {
             <Reveal y={18} delay={0.05}>
               <div className="flex gap-4">
                 <Clock
-                  className="mt-0.5 h-4 w-4 shrink-0 text-champagne"
+                  className="mt-0.5 h-4 w-4 shrink-0 text-accent"
                   strokeWidth={1.4}
                   aria-hidden="true"
                 />
@@ -76,7 +76,7 @@ export default function LocationSection() {
             <Reveal y={18} delay={0.1}>
               <div className="flex gap-4">
                 <Phone
-                  className="mt-0.5 h-4 w-4 shrink-0 text-champagne"
+                  className="mt-0.5 h-4 w-4 shrink-0 text-accent"
                   strokeWidth={1.4}
                   aria-hidden="true"
                 />
@@ -85,7 +85,7 @@ export default function LocationSection() {
                   <dd>
                     <a
                       href={telLink}
-                      className="text-ivory/70 transition-colors hover:text-champagne"
+                      className="text-ivory/70 transition-colors hover:text-accent"
                     >
                       {SITE.contact.phone}
                     </a>
@@ -97,7 +97,7 @@ export default function LocationSection() {
             <Reveal y={18} delay={0.15}>
               <div className="flex gap-4">
                 <Mail
-                  className="mt-0.5 h-4 w-4 shrink-0 text-champagne"
+                  className="mt-0.5 h-4 w-4 shrink-0 text-accent"
                   strokeWidth={1.4}
                   aria-hidden="true"
                 />
@@ -106,7 +106,7 @@ export default function LocationSection() {
                   <dd>
                     <a
                       href={mailLink}
-                      className="break-all text-ivory/70 transition-colors hover:text-champagne"
+                      className="break-all text-ivory/70 transition-colors hover:text-accent"
                     >
                       {SITE.contact.email}
                     </a>
@@ -131,7 +131,7 @@ export default function LocationSection() {
         </div>
 
         <Reveal y={40} className="relative">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-white/[0.08] lg:aspect-auto lg:h-full lg:min-h-[32rem]">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-line lg:aspect-auto lg:h-full lg:min-h-[32rem]">
             {mapLoaded ? (
               <iframe
                 title={'Map showing ' + SITE.name + ' in Hebron, Accra'}
@@ -156,11 +156,11 @@ export default function LocationSection() {
                 />
 
                 <div className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2">
-                  <span className="relative grid h-14 w-14 place-items-center rounded-full border border-champagne/50 bg-ink/70 text-champagne backdrop-blur-md">
+                  <span className="relative grid h-14 w-14 place-items-center rounded-full border border-accent/50 bg-ink/70 text-accent backdrop-blur-md">
                     <MapPin className="h-5 w-5" strokeWidth={1.4} aria-hidden="true" />
                     <span
                       aria-hidden="true"
-                      className="absolute inset-0 animate-ping rounded-full border border-champagne/30"
+                      className="absolute inset-0 animate-ping rounded-full border border-accent/30"
                       style={{ animationDuration: '3.2s' }}
                     />
                   </span>
@@ -174,7 +174,7 @@ export default function LocationSection() {
                     <button
                       type="button"
                       onClick={() => setMapLoaded(true)}
-                      className="rounded-full border border-white/15 px-5 py-2.5 font-sans text-2xs uppercase tracking-luxe text-ivory/70 transition-colors duration-500 hover:border-champagne/60 hover:text-champagne"
+                      className="rounded-full border border-line-2 px-5 py-2.5 font-sans text-2xs uppercase tracking-luxe text-ivory/70 transition-colors duration-500 hover:border-accent/60 hover:text-accent"
                     >
                       Load map
                     </button>
@@ -182,7 +182,7 @@ export default function LocationSection() {
                       href={MAPS_LINK}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-full bg-champagne px-5 py-2.5 font-sans text-2xs uppercase tracking-luxe text-ink transition-colors duration-500 hover:bg-champagne-light"
+                      className="rounded-full bg-champagne px-5 py-2.5 font-sans text-2xs uppercase tracking-luxe text-onaccent transition-colors duration-500 hover:bg-champagne-light"
                     >
                       Directions
                     </a>

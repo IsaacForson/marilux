@@ -56,7 +56,7 @@ export default function StepDetails() {
             <button
               type="button"
               onClick={() => set({ whatsapp: draft.phone ?? '' })}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-white/12 px-3 py-2 font-sans text-2xs uppercase tracking-luxe text-ivory/50 transition-colors duration-500 hover:border-champagne/50 hover:text-champagne"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-line-2 px-3 py-2 font-sans text-2xs uppercase tracking-luxe text-ivory/50 transition-colors duration-500 hover:border-accent/50 hover:text-accent"
             >
               <Copy className="mr-1.5 inline h-3 w-3" strokeWidth={1.5} aria-hidden="true" />
               Same

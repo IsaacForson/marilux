@@ -22,7 +22,7 @@ export default function Marquee({
       {items.map((item, i) => (
         <span key={item + i} className="flex items-center whitespace-nowrap">
           <span className="px-6 sm:px-10">{item}</span>
-          <span className="text-champagne/45">{separator}</span>
+          <span className="text-accent/45">{separator}</span>
         </span>
       ))}
     </div>

@@ -98,7 +98,7 @@ export default function Preloader() {
         </div>
         <div
           data-intro-rule
-          className="mt-8 h-px w-[min(38vw,320px)] origin-left scale-x-0 bg-champagne/40"
+          className="mt-8 h-px w-[min(38vw,320px)] origin-left scale-x-0 bg-accent/40"
         />
         <span
           data-intro-meta

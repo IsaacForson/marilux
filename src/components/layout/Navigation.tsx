@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { lockScroll, unlockScroll } from '@/components/providers/SmoothScroll';
 import { ButtonLink } from '@/components/ui/Button';
 import Wordmark from './Wordmark';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navigation() {
   const [open, setOpen] = useState(false);
@@ -74,7 +75,7 @@ export default function Navigation() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[130] focus:rounded-full focus:bg-champagne focus:px-5 focus:py-2.5 focus:text-2xs focus:uppercase focus:tracking-luxe focus:text-ink"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[130] focus:rounded-full focus:bg-champagne focus:px-5 focus:py-2.5 focus:text-2xs focus:uppercase focus:tracking-luxe focus:text-onaccent"
       >
         Skip to content
       </a>
@@ -113,14 +114,14 @@ export default function Navigation() {
                         aria-current={active ? 'page' : undefined}
                         className={cn(
                           'group relative block px-4 py-2 font-sans text-[0.66rem] uppercase tracking-luxe transition-colors duration-500',
-                          active ? 'text-champagne' : 'text-ivory/65 hover:text-ivory',
+                          active ? 'text-accent' : 'text-ivory/65 hover:text-ivory',
                         )}
                       >
                         {link.label}
                         <span
                           aria-hidden="true"
                           className={cn(
-                            'absolute inset-x-4 bottom-1 h-px origin-left bg-champagne/70 transition-transform duration-500 ease-luxe',
+                            'absolute inset-x-4 bottom-1 h-px origin-left bg-accent/70 transition-transform duration-500 ease-luxe',
                             active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
                           )}
                         />
@@ -135,10 +136,12 @@ export default function Navigation() {
               <a
                 href={telLink}
                 aria-label={'Call ' + SITE.name}
-                className="hidden h-11 w-11 items-center justify-center rounded-full border border-white/12 text-ivory/70 transition-colors duration-500 hover:border-champagne/60 hover:text-champagne sm:flex"
+                className="hidden h-11 w-11 items-center justify-center rounded-full border border-line-2 text-ivory/70 transition-colors duration-500 hover:border-accent/60 hover:text-accent sm:flex"
               >
                 <Phone className="h-4 w-4" strokeWidth={1.4} aria-hidden="true" />
               </a>
+
+              <ThemeToggle />
 
               <ButtonLink href="/booking" size="sm">
                 Book
@@ -150,7 +153,7 @@ export default function Navigation() {
                 aria-expanded={open}
                 aria-controls="mobile-menu"
                 aria-label={open ? 'Close menu' : 'Open menu'}
-                className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/12 text-ivory transition-colors duration-500 hover:border-champagne/60 lg:hidden"
+                className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-line-2 text-ivory transition-colors duration-500 hover:border-accent/60 lg:hidden"
               >
                 <span className="relative block h-3 w-4">
                   <span
@@ -221,7 +224,7 @@ function MobileMenu({
                   const active =
                     link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
                   return (
-                    <li key={link.href} className="overflow-hidden border-b border-white/[0.07]">
+                    <li key={link.href} className="overflow-hidden border-b border-line">
                       <motion.div
                         initial={{ y: '110%' }}
                         animate={{ y: 0 }}
@@ -264,14 +267,14 @@ function MobileMenu({
               </ButtonLink>
 
               <div className="flex flex-wrap gap-x-6 gap-y-2 font-sans text-2xs uppercase tracking-luxe text-ivory/45">
-                <a href={telLink} className="hover:text-champagne">
+                <a href={telLink} className="hover:text-accent">
                   {SITE.contact.phone}
                 </a>
                 <a
                   href={whatsappLink('Hello Marilux, I would like to make an enquiry.')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-champagne"
+                  className="hover:text-accent"
                 >
                   WhatsApp
                 </a>
@@ -279,7 +282,7 @@ function MobileMenu({
                   href={SITE.socials.instagram.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-champagne"
+                  className="hover:text-accent"
                 >
                   Instagram
                 </a>

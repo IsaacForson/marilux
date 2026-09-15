@@ -58,8 +58,8 @@ export default function MasonryGrid() {
                 className={cn(
                   'shrink-0 rounded-full border px-5 py-2.5 font-sans text-2xs uppercase tracking-luxe transition-all duration-500 ease-luxe',
                   selected
-                    ? 'border-champagne bg-champagne text-ink'
-                    : 'border-white/[0.09] text-ivory/50 hover:border-champagne/50 hover:text-champagne',
+                    ? 'border-accent bg-champagne text-onaccent'
+                    : 'border-line text-ivory/50 hover:border-accent/50 hover:text-accent',
                 )}
               >
                 {f.label}
@@ -94,26 +94,27 @@ export default function MasonryGrid() {
               <Plate
                 src={item.src}
                 alt={item.title}
-                seed={item.seed}
+                theme={item.theme}
+                index={item.index}
                 ratio={RATIO[item.span]}
                 scrim
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className="h-full transition-transform duration-[1100ms] ease-luxe group-hover:scale-[1.06]"
               >
                 {item.kind === 'video' && (
-                  <span className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-ink/50 text-ivory backdrop-blur-md">
+                  <span className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full border border-line-3 bg-ink/50 text-ivory backdrop-blur-md">
                     <Play className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                   </span>
                 )}
                 {item.kind === 'before-after' && (
-                  <span className="absolute right-4 top-4 rounded-full border border-champagne/40 bg-ink/50 px-3 py-1.5 font-sans text-2xs uppercase tracking-luxe text-champagne backdrop-blur-md">
+                  <span className="absolute right-4 top-4 rounded-full border border-accent/40 bg-ink/50 px-3 py-1.5 font-sans text-2xs uppercase tracking-luxe text-accent backdrop-blur-md">
                     Before / After
                   </span>
                 )}
               </Plate>
 
-              <figcaption className="absolute inset-x-0 bottom-0 translate-y-2 p-4 opacity-0 transition-all duration-700 ease-luxe group-hover:translate-y-0 group-hover:opacity-100 sm:p-5">
-                <span className="block font-sans text-2xs uppercase tracking-luxe text-champagne/80">
+              <figcaption className="on-media absolute inset-x-0 bottom-0 translate-y-2 p-4 opacity-0 transition-all duration-700 ease-luxe group-hover:translate-y-0 group-hover:opacity-100 sm:p-5">
+                <span className="block font-sans text-2xs uppercase tracking-luxe text-accent/80">
                   {item.category}
                 </span>
                 <span className="mt-1.5 block font-display text-base font-light leading-snug text-ivory sm:text-lg">

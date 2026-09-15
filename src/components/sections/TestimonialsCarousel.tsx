@@ -37,7 +37,7 @@ export default function TestimonialsCarousel() {
 
   return (
     <section
-      className="relative overflow-hidden border-y border-white/[0.07] py-24 sm:py-36"
+      className="relative overflow-hidden border-y border-line py-24 sm:py-36"
       aria-labelledby="testimonials-title"
       onMouseEnter={() => setAuto(false)}
       onFocusCapture={() => setAuto(false)}
@@ -65,8 +65,9 @@ export default function TestimonialsCarousel() {
               className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-[auto,1fr] sm:items-center"
             >
               <Plate
-                alt={t.name}
-                seed={60 + index * 41}
+                alt={'A portrait of ' + t.name}
+                theme="portrait"
+                index={index + 2}
                 ratio="aspect-square"
                 rounded="rounded-full"
                 className="mx-auto w-28 sm:w-36"
@@ -81,7 +82,7 @@ export default function TestimonialsCarousel() {
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <Star
                       key={i}
-                      className="h-3.5 w-3.5 fill-champagne text-champagne"
+                      className="h-3.5 w-3.5 fill-accent text-accent"
                       aria-hidden="true"
                     />
                   ))}
@@ -92,7 +93,7 @@ export default function TestimonialsCarousel() {
                 </blockquote>
 
                 <figcaption className="mt-7 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-sans text-2xs uppercase tracking-luxe sm:justify-start">
-                  <span className="text-champagne">{t.name}</span>
+                  <span className="text-accent">{t.name}</span>
                   <span className="text-ivory/25" aria-hidden="true">
                     /
                   </span>
@@ -112,7 +113,7 @@ export default function TestimonialsCarousel() {
             type="button"
             onClick={() => go(index - 1)}
             aria-label="Previous story"
-            className="grid h-12 w-12 place-items-center rounded-full border border-white/12 text-ivory/70 transition-all duration-500 hover:border-champagne/60 hover:text-champagne"
+            className="grid h-12 w-12 place-items-center rounded-full border border-line-2 text-ivory/70 transition-all duration-500 hover:border-accent/60 hover:text-accent"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={1.4} aria-hidden="true" />
           </button>
@@ -144,7 +145,7 @@ export default function TestimonialsCarousel() {
             type="button"
             onClick={() => go(index + 1)}
             aria-label="Next story"
-            className="grid h-12 w-12 place-items-center rounded-full border border-white/12 text-ivory/70 transition-all duration-500 hover:border-champagne/60 hover:text-champagne"
+            className="grid h-12 w-12 place-items-center rounded-full border border-line-2 text-ivory/70 transition-all duration-500 hover:border-accent/60 hover:text-accent"
           >
             <ArrowRight className="h-4 w-4" strokeWidth={1.4} aria-hidden="true" />
           </button>
@@ -153,7 +154,7 @@ export default function TestimonialsCarousel() {
         <Reveal y={16} className="mt-14 text-center">
           <a
             href="/testimonials"
-            className="font-sans text-2xs uppercase tracking-luxe text-ivory/45 underline decoration-champagne/40 underline-offset-8 transition-colors hover:text-champagne"
+            className="font-sans text-2xs uppercase tracking-luxe text-ivory/45 underline decoration-accent/40 underline-offset-8 transition-colors hover:text-accent"
           >
             Read every story
           </a>

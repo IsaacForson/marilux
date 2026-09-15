@@ -43,7 +43,7 @@ export default function Newsletter() {
         <label htmlFor="newsletter-email" className="sr-only">
           Email address
         </label>
-        <div className="flex items-center gap-2 rounded-full border border-white/12 bg-ink/40 p-1.5 pl-5 transition-colors duration-500 focus-within:border-champagne/60">
+        <div className="flex items-center gap-2 rounded-full border border-line-2 bg-ink/40 p-1.5 pl-5 transition-colors duration-500 focus-within:border-accent/60">
           <input
             id="newsletter-email"
             type="email"
@@ -64,7 +64,7 @@ export default function Newsletter() {
             type="submit"
             disabled={state === 'loading' || state === 'done'}
             aria-label="Subscribe"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-champagne text-ink transition-all duration-500 hover:bg-champagne-light disabled:opacity-60"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-champagne text-onaccent transition-all duration-500 hover:bg-champagne-light disabled:opacity-60"
           >
             {state === 'done' ? (
               <Check className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
@@ -80,9 +80,9 @@ export default function Newsletter() {
           aria-live="polite"
           className="mt-2.5 min-h-[1.25rem] pl-5 text-2xs uppercase tracking-luxe"
         >
-          {state === 'done' && <span className="text-champagne">Welcome. Check your inbox.</span>}
+          {state === 'done' && <span className="text-accent">Welcome. Check your inbox.</span>}
           {state === 'error' && (
-            <span className="text-rosegold-light">Please enter a valid email address.</span>
+            <span className="text-danger">Please enter a valid email address.</span>
           )}
         </p>
       </form>

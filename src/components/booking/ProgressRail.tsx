@@ -24,7 +24,7 @@ export default function ProgressRail() {
                   aria-hidden="true"
                   className={cn(
                     'absolute left-[0.6875rem] top-6 h-full w-px transition-colors duration-700',
-                    done ? 'bg-champagne/45' : 'bg-white/[0.09]',
+                    done ? 'bg-accent/45' : 'bg-fill-2',
                   )}
                 />
               )}
@@ -40,10 +40,10 @@ export default function ProgressRail() {
                   className={cn(
                     'relative z-10 grid h-[1.375rem] w-[1.375rem] shrink-0 place-items-center rounded-full border text-[0.6rem] transition-all duration-500 ease-luxe',
                     done
-                      ? 'border-transparent text-ink'
+                      ? 'border-transparent text-onaccent'
                       : current
-                        ? 'border-champagne text-champagne'
-                        : 'border-white/15 text-ivory/30',
+                        ? 'border-accent text-accent'
+                        : 'border-line-2 text-ivory/30',
                   )}
                   style={done ? { backgroundColor: accent } : undefined}
                 >
@@ -58,7 +58,7 @@ export default function ProgressRail() {
                   className={cn(
                     'font-sans text-2xs uppercase tracking-luxe transition-colors duration-500',
                     current
-                      ? 'text-champagne'
+                      ? 'text-accent'
                       : done
                         ? 'text-ivory/60 group-hover:text-ivory'
                         : 'text-ivory/25',
@@ -75,7 +75,7 @@ export default function ProgressRail() {
       {/* Mobile: a compact counter plus a progress bar. */}
       <div className="lg:hidden">
         <div className="mb-3 flex items-baseline justify-between">
-          <p className="font-sans text-2xs uppercase tracking-luxe text-champagne">
+          <p className="font-sans text-2xs uppercase tracking-luxe text-accent">
             {STEPS[step].label}
           </p>
           <p className="font-sans text-2xs uppercase tracking-luxe text-ivory/35">
@@ -83,7 +83,7 @@ export default function ProgressRail() {
           </p>
         </div>
         <div
-          className="h-px w-full overflow-hidden bg-white/10"
+          className="h-px w-full overflow-hidden bg-fill-2"
           role="progressbar"
           aria-valuenow={step + 1}
           aria-valuemin={1}

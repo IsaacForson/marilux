@@ -79,7 +79,7 @@ export default function Lightbox({
               onClick={onClose}
               autoFocus
               aria-label="Close gallery"
-              className="grid h-11 w-11 place-items-center rounded-full border border-white/12 text-ivory/70 transition-colors duration-500 hover:border-champagne/60 hover:text-champagne"
+              className="grid h-11 w-11 place-items-center rounded-full border border-line-2 text-ivory/70 transition-colors duration-500 hover:border-accent/60 hover:text-accent"
             >
               <X className="h-4 w-4" strokeWidth={1.4} aria-hidden="true" />
             </button>
@@ -100,15 +100,17 @@ export default function Lightbox({
                   {item.kind === 'before-after' ? (
                     <BeforeAfter
                       alt={item.title}
-                      beforeSeed={item.seed}
-                      afterSeed={(item.seed + 90) % 360}
+                      theme={item.theme}
+                      beforeIndex={item.index + 1}
+                      afterIndex={item.index}
                       ratio="aspect-[4/5]"
                     />
                   ) : (
                     <Plate
                       src={item.src}
                       alt={item.title}
-                      seed={item.seed}
+                      theme={item.theme}
+                      index={item.index}
                       ratio="aspect-[4/5]"
                       sizes="(max-width: 768px) 92vw, 42rem"
                     />
@@ -139,7 +141,7 @@ function NavButton({ dir, onClick }: { dir: 'prev' | 'next'; onClick: () => void
       type="button"
       onClick={onClick}
       aria-label={dir === 'prev' ? 'Previous image' : 'Next image'}
-      className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/12 text-ivory/70 transition-all duration-500 hover:border-champagne/60 hover:text-champagne"
+      className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-line-2 text-ivory/70 transition-all duration-500 hover:border-accent/60 hover:text-accent"
     >
       <Icon className="h-4 w-4" strokeWidth={1.4} aria-hidden="true" />
     </button>

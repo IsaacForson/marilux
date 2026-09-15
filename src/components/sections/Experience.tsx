@@ -32,7 +32,7 @@ const PILLARS = [
 export default function Experience() {
   return (
     <section
-      className="relative overflow-hidden border-y border-white/[0.07] py-24 sm:py-36"
+      className="relative overflow-hidden border-y border-line py-24 sm:py-36"
       aria-labelledby="experience-title"
     >
       <Aura className="-right-40 top-10" color="rgba(217,188,140,0.13)" size={680} />
@@ -43,13 +43,14 @@ export default function Experience() {
           <Reveal y={40} className="relative order-2 lg:order-1">
             <Plate
               alt="The treatment floor at Marilux Beauty Bar, warm and low-lit"
-              seed={26}
+              theme="studio"
+              index={2}
               ratio="aspect-[4/5]"
               sizes="(max-width: 1024px) 100vw, 45vw"
               className="shadow-[0_60px_140px_-60px_rgba(0,0,0,0.95)]"
             />
             <div className="glass absolute -bottom-6 -right-4 max-w-[15rem] rounded-2xl p-6 sm:-right-8">
-              <p className="font-display text-4xl font-light text-champagne">98%</p>
+              <p className="font-display text-4xl font-light text-accent">98%</p>
               <p className="mt-2 text-sm leading-relaxed text-ivory/60">
                 of our guests book their next appointment before they leave.
               </p>
@@ -70,8 +71,8 @@ export default function Experience() {
             <ul className="mt-14 space-y-8">
               {PILLARS.map((p, i) => (
                 <Reveal key={p.title} y={22} delay={i * 0.06}>
-                  <li className="group flex gap-5 border-b border-white/[0.07] pb-8">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-champagne/25 text-champagne transition-colors duration-500 group-hover:border-champagne/70">
+                  <li className="group flex gap-5 border-b border-line pb-8">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-accent/25 text-accent transition-colors duration-500 group-hover:border-accent/70">
                       <p.icon className="h-4 w-4" strokeWidth={1.35} aria-hidden="true" />
                     </span>
                     <div>
@@ -88,7 +89,7 @@ export default function Experience() {
         </div>
 
         {/* Proof bar */}
-        <dl className="mt-24 grid grid-cols-2 gap-x-6 gap-y-12 border-t border-white/[0.07] pt-16 lg:grid-cols-4">
+        <dl className="mt-24 grid grid-cols-2 gap-x-6 gap-y-12 border-t border-line pt-16 lg:grid-cols-4">
           {STATS.map((stat, i) => (
             <Reveal key={stat.label} y={20} delay={i * 0.07}>
               <div>

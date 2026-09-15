@@ -1,34 +1,41 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { photo, type ImageTheme } from '@/lib/data/images';
 
 type PlateProps = {
-  /** Supply a real photograph and the generated plate is replaced entirely. */
+  /** An explicit file path wins over the themed pool. */
   src?: string;
-  alt: string;
-  /** Deterministic hue seed (0–360) so a given plate always renders the same. */
+  alt?: string;
+  /** Pick from a themed photography pool instead of naming a file. */
+  theme?: ImageTheme;
+  /** Which photograph within the pool. Deterministic, so slots stay stable. */
+  index?: number;
+  /** Hue seed for the generated fallback, used only when no photo resolves. */
   seed?: number;
   className?: string;
-  /** Aspect ratio utility, e.g. "aspect-[3/4]". */
   ratio?: string;
   priority?: boolean;
   sizes?: string;
-  /** Adds a soft dark scrim for text laid over the image. */
+  /** Soft dark scrim for text laid over the image. */
   scrim?: boolean;
   children?: React.ReactNode;
   rounded?: string;
+  /** Crop focus, e.g. "50% 25%" to favour a face near the top. */
+  position?: string;
 };
 
 /**
- * Image surface with a designed fallback.
+ * Image surface.
  *
- * Until real photography is shot, each plate renders a layered warm-light
- * composition derived from its seed — champagne, nude and rose-gold radials
- * over ink, with film grain and a vignette. It reads as art direction rather
- * than as a missing asset, and swapping in `src` later changes nothing else.
+ * Resolves, in order: an explicit `src`, a photograph from a themed pool, or —
+ * if neither is given — a generated warm-light composition so a slot can never
+ * render as a broken or empty box.
  */
 export default function Plate({
   src,
   alt,
+  theme,
+  index = 0,
   seed = 40,
   className,
   ratio = 'aspect-[4/5]',
@@ -37,67 +44,68 @@ export default function Plate({
   scrim,
   children,
   rounded = 'rounded-[1.75rem]',
+  position = 'center',
 }: PlateProps) {
-  // Seeds are mapped into the brand's warm band (rose through champagne)
-  // rather than the full colour wheel, so no plate can drift off-palette.
-  const h1 = 10 + (seed % 7) * 5.5; // 10deg (rose) — 43deg (champagne)
-  const h2 = 4 + ((seed + 3) % 6) * 6; // a neighbouring warm tone for the fill
+  const resolved = src ? { src, alt: alt ?? '' } : theme ? photo(theme, index) : null;
+  const label = alt ?? resolved?.alt ?? '';
+
+  const h1 = 10 + (seed % 7) * 5.5;
+  const h2 = 4 + ((seed + 3) % 6) * 6;
 
   return (
     <div
       className={cn(
-        'relative isolate overflow-hidden bg-ink-800 grain',
+        // `on-media` pins the colour tokens for anything laid over the photo.
+        'on-media relative isolate overflow-hidden bg-ink-800 grain',
         ratio,
         rounded,
         className,
       )}
     >
-      {src ? (
+      {resolved ? (
         <Image
-          src={src}
-          alt={alt}
+          src={resolved.src}
+          alt={label}
           fill
           priority={priority}
           sizes={sizes}
           className="object-cover"
+          style={{ objectPosition: position }}
         />
       ) : (
         <div
           role="img"
-          aria-label={alt}
+          aria-label={label}
           className="absolute inset-0"
           style={{
             backgroundColor: '#211A15',
             backgroundImage: [
-              // Key light — warm, off-centre, the brightest mass.
               'radial-gradient(68% 54% at 30% 24%, hsl(' +
                 h1 +
                 ' 62% 74% / 0.62) 0%, transparent 64%)',
-              // Fill light — cooler and lower, shapes the form.
               'radial-gradient(58% 50% at 78% 70%, hsl(' +
                 h2 +
                 ' 48% 60% / 0.48) 0%, transparent 68%)',
-              // Champagne bloom, the signature highlight.
               'radial-gradient(44% 34% at 58% 40%, rgba(244,226,196,0.34) 0%, transparent 72%)',
-              // Silk texture.
               'repeating-linear-gradient(112deg, rgba(255,255,255,0.032) 0px, rgba(255,255,255,0.032) 1px, transparent 1px, transparent 9px)',
-              // Vignette keeps the subject centred and the edges print-dark.
               'radial-gradient(112% 82% at 50% 42%, transparent 44%, rgba(11,10,9,0.62) 100%)',
             ].join(','),
           }}
         />
       )}
 
-      {/* Inner hairline gives the plate a framed, print-like edge. */}
       <div
         aria-hidden="true"
-        className={cn('pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/[0.08]', rounded)}
+        className={cn(
+          'pointer-events-none absolute inset-0 ring-1 ring-inset ring-line',
+          rounded,
+        )}
       />
 
       {scrim && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/35 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B0A09] via-[#0B0A09]/40 to-transparent"
         />
       )}
 

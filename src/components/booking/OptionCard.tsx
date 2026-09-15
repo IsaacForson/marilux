@@ -39,8 +39,8 @@ export default function OptionCard({
       className={cn(
         'group relative block cursor-pointer overflow-hidden rounded-2xl border p-5 transition-all duration-500 ease-luxe sm:p-6',
         checked
-          ? 'border-champagne/70 bg-champagne/[0.07]'
-          : 'border-white/[0.09] bg-white/[0.015] hover:border-white/20 hover:bg-white/[0.035]',
+          ? 'border-accent/70 bg-accent/[0.07]'
+          : 'border-line bg-fill hover:border-line-3 hover:bg-fill-2',
         className,
       )}
     >
@@ -100,8 +100,8 @@ export default function OptionCard({
             className={cn(
               'grid h-6 w-6 place-items-center rounded-full border transition-all duration-500',
               checked
-                ? 'border-champagne bg-champagne text-ink'
-                : 'border-white/20 text-transparent group-hover:border-white/40',
+                ? 'border-accent bg-champagne text-onaccent'
+                : 'border-line-3 text-transparent group-hover:border-line-3',
             )}
           >
             <Check className="h-3 w-3" strokeWidth={2.5} />

@@ -28,14 +28,14 @@ export default function StepDate() {
 
   return (
     <div>
-      <div className="rounded-2xl border border-white/[0.09] bg-white/[0.015] p-5 sm:p-7">
+      <div className="rounded-2xl border border-line bg-fill p-5 sm:p-7">
         <div className="mb-6 flex items-center justify-between">
           <button
             type="button"
             onClick={() => setCursor(shiftMonth(cursor, -1))}
             disabled={!canGoBack}
             aria-label="Previous month"
-            className="grid h-10 w-10 place-items-center rounded-full border border-white/12 text-ivory/70 transition-colors duration-500 hover:border-champagne/60 hover:text-champagne disabled:pointer-events-none disabled:opacity-25"
+            className="grid h-10 w-10 place-items-center rounded-full border border-line-2 text-ivory/70 transition-colors duration-500 hover:border-accent/60 hover:text-accent disabled:pointer-events-none disabled:opacity-25"
           >
             <ChevronLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
           </button>
@@ -49,7 +49,7 @@ export default function StepDate() {
             onClick={() => setCursor(shiftMonth(cursor, 1))}
             disabled={!canGoForward}
             aria-label="Next month"
-            className="grid h-10 w-10 place-items-center rounded-full border border-white/12 text-ivory/70 transition-colors duration-500 hover:border-champagne/60 hover:text-champagne disabled:pointer-events-none disabled:opacity-25"
+            className="grid h-10 w-10 place-items-center rounded-full border border-line-2 text-ivory/70 transition-colors duration-500 hover:border-accent/60 hover:text-accent disabled:pointer-events-none disabled:opacity-25"
           >
             <ChevronRight className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
           </button>
@@ -100,8 +100,8 @@ export default function StepDate() {
                   disabled
                     ? 'cursor-not-allowed border-transparent text-ivory/15'
                     : selected
-                      ? 'border-transparent font-medium text-ink'
-                      : 'border-white/[0.07] text-ivory/75 hover:border-champagne/50 hover:text-champagne',
+                      ? 'border-transparent font-medium text-onaccent'
+                      : 'border-line text-ivory/75 hover:border-accent/50 hover:text-accent',
                 )}
                 style={selected ? { backgroundColor: accent } : undefined}
               >
@@ -122,7 +122,7 @@ export default function StepDate() {
         {SITE.hours.map((h) => (
           <div
             key={h.days}
-            className="flex items-center justify-between rounded-xl border border-white/[0.07] px-4 py-3 text-sm"
+            className="flex items-center justify-between rounded-xl border border-line px-4 py-3 text-sm"
           >
             <dt className="text-ivory/45">{h.days}</dt>
             <dd className="text-ivory/75">

@@ -32,9 +32,9 @@ export default function InstagramStrip() {
               href={SITE.socials.instagram.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 font-sans text-2xs uppercase tracking-luxe text-ivory/55 transition-colors hover:text-champagne"
+              className="group inline-flex items-center gap-3 font-sans text-2xs uppercase tracking-luxe text-ivory/55 transition-colors hover:text-accent"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-full border border-white/12 transition-all duration-500 group-hover:border-champagne/60">
+              <span className="grid h-10 w-10 place-items-center rounded-full border border-line-2 transition-all duration-500 group-hover:border-accent/60">
                 <FaInstagram className="h-4 w-4" aria-hidden="true" />
               </span>
               {SITE.socials.instagram.handle}
@@ -56,14 +56,15 @@ export default function InstagramStrip() {
             >
               <Plate
                 alt={item.title}
-                seed={item.seed}
+                theme={item.theme}
+                index={item.index}
                 ratio="aspect-square"
                 rounded="rounded-xl"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 12.5vw"
                 className="transition-transform duration-[1100ms] ease-luxe group-hover:scale-110"
               />
-              <span className="absolute inset-0 grid place-items-center bg-ink/60 opacity-0 backdrop-blur-[2px] transition-opacity duration-500 group-hover:opacity-100">
-                <FaInstagram className="h-5 w-5 text-champagne" aria-hidden="true" />
+              <span className="on-media absolute inset-0 grid place-items-center bg-ink/60 opacity-0 backdrop-blur-[2px] transition-opacity duration-500 group-hover:opacity-100">
+                <FaInstagram className="h-5 w-5 text-accent" aria-hidden="true" />
               </span>
             </a>
           </Reveal>

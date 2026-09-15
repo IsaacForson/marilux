@@ -27,13 +27,13 @@ export default function StepSummary() {
 
   return (
     <div>
-      <dl className="overflow-hidden rounded-2xl border border-white/[0.09]">
+      <dl className="overflow-hidden rounded-2xl border border-line">
         {rows.map((row, i) => (
           <div
             key={row.label}
             className={
               'group flex items-start justify-between gap-4 px-5 py-4 sm:px-6 ' +
-              (i % 2 ? 'bg-white/[0.012]' : '')
+              (i % 2 ? 'bg-fill' : '')
             }
           >
             <dt className="w-28 shrink-0 pt-0.5 font-sans text-2xs uppercase tracking-luxe text-ivory/35 sm:w-36">
@@ -45,7 +45,7 @@ export default function StepSummary() {
             <button
               type="button"
               onClick={() => goTo(row.step)}
-              className="shrink-0 rounded-lg p-2 text-ivory/30 opacity-0 transition-all duration-400 focus-visible:opacity-100 group-hover:opacity-100 hover:text-champagne"
+              className="shrink-0 rounded-lg p-2 text-ivory/30 opacity-0 transition-all duration-400 focus-visible:opacity-100 group-hover:opacity-100 hover:text-accent"
               aria-label={'Edit ' + row.label.toLowerCase()}
             >
               <Pencil className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
@@ -55,7 +55,7 @@ export default function StepSummary() {
       </dl>
 
       {/* Money */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-champagne/25 bg-champagne/[0.05]">
+      <div className="mt-4 overflow-hidden rounded-2xl border border-accent/25 bg-accent/[0.05]">
         <div className="flex items-center justify-between px-5 py-4 sm:px-6">
           <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/50">
             Treatment total
@@ -64,13 +64,13 @@ export default function StepSummary() {
             {service ? formatPrice(service) : '—'}
           </span>
         </div>
-        <div className="flex items-center justify-between border-t border-champagne/20 px-5 py-4 sm:px-6">
-          <span className="font-sans text-2xs uppercase tracking-luxe text-champagne">
+        <div className="flex items-center justify-between border-t border-accent/20 px-5 py-4 sm:px-6">
+          <span className="font-sans text-2xs uppercase tracking-luxe text-accent">
             Deposit due now (50%)
           </span>
-          <span className="font-display text-2xl text-champagne">{GHS(resolved.deposit)}</span>
+          <span className="font-display text-2xl text-accent">{GHS(resolved.deposit)}</span>
         </div>
-        <div className="flex items-center justify-between border-t border-champagne/20 px-5 py-4 sm:px-6">
+        <div className="flex items-center justify-between border-t border-accent/20 px-5 py-4 sm:px-6">
           <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/40">
             Balance, in studio
           </span>
@@ -98,10 +98,10 @@ export default function StepSummary() {
         className={
           'mt-8 flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition-colors duration-500 sm:p-6 ' +
           (draft.policiesAccepted
-            ? 'border-champagne/60 bg-champagne/[0.06]'
+            ? 'border-accent/60 bg-accent/[0.06]'
             : errors.policiesAccepted
               ? 'border-rosegold/60 bg-rosegold/[0.04]'
-              : 'border-white/[0.09] hover:border-white/20')
+              : 'border-line hover:border-line-3')
         }
       >
         <input
@@ -116,8 +116,8 @@ export default function StepSummary() {
           className={
             'mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md border transition-all duration-400 ' +
             (draft.policiesAccepted
-              ? 'border-champagne bg-champagne text-ink'
-              : 'border-white/25 text-transparent')
+              ? 'border-accent bg-champagne text-onaccent'
+              : 'border-line-3 text-transparent')
           }
         >
           <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -132,7 +132,7 @@ export default function StepSummary() {
       </label>
 
       {errors.policiesAccepted && (
-        <p role="alert" className="mt-3 text-xs text-rosegold-light">
+        <p role="alert" className="mt-3 text-xs text-danger">
           {errors.policiesAccepted}
         </p>
       )}

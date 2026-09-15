@@ -17,6 +17,7 @@ const DEPOSIT_LABEL: Record<BookingRecord['depositStatus'], string> = {
   paid: 'PAID',
   pending: 'PENDING',
   'awaiting-link': 'AWAITING PAYMENT LINK',
+  refunded: 'REFUNDED',
   failed: 'FAILED',
 };
 

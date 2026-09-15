@@ -42,7 +42,7 @@ export default function FloatingActions() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={'Message ' + SITE.shortName + ' on WhatsApp'}
-            className="grid h-13 w-13 place-items-center rounded-full border border-white/12 bg-ink/80 text-ivory backdrop-blur-xl transition-all duration-500 ease-luxe hover:-translate-y-0.5 hover:border-champagne/60 hover:text-champagne"
+            className="grid h-13 w-13 place-items-center rounded-full border border-line-2 bg-ink/80 text-ivory backdrop-blur-xl transition-all duration-500 ease-luxe hover:-translate-y-0.5 hover:border-accent/60 hover:text-accent"
             style={{ height: '3.25rem', width: '3.25rem' }}
           >
             <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
@@ -50,7 +50,7 @@ export default function FloatingActions() {
 
           <Link
             href="/booking"
-            className="group flex h-[3.25rem] items-center gap-2.5 rounded-full bg-champagne px-6 font-sans text-[0.66rem] uppercase tracking-luxe text-ink transition-all duration-500 ease-luxe hover:-translate-y-0.5 hover:bg-champagne-light"
+            className="group flex h-[3.25rem] items-center gap-2.5 rounded-full bg-champagne px-6 font-sans text-[0.66rem] uppercase tracking-luxe text-onaccent transition-all duration-500 ease-luxe hover:-translate-y-0.5 hover:bg-champagne-light"
           >
             <CalendarCheck className="h-4 w-4" strokeWidth={1.6} aria-hidden="true" />
             Book now

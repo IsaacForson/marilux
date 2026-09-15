@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { MoveHorizontal } from 'lucide-react';
 import Plate from '@/components/ui/Plate';
+import type { ImageTheme } from '@/lib/data/images';
 import { clamp, cn } from '@/lib/utils';
 
 /**
@@ -15,8 +16,9 @@ import { clamp, cn } from '@/lib/utils';
 export default function BeforeAfter({
   beforeSrc,
   afterSrc,
-  beforeSeed = 18,
-  afterSeed = 46,
+  theme = 'portrait',
+  beforeIndex = 0,
+  afterIndex = 1,
   alt,
   caption,
   ratio = 'aspect-[4/5]',
@@ -24,8 +26,10 @@ export default function BeforeAfter({
 }: {
   beforeSrc?: string;
   afterSrc?: string;
-  beforeSeed?: number;
-  afterSeed?: number;
+  /** Photography pool both panes draw from. */
+  theme?: ImageTheme;
+  beforeIndex?: number;
+  afterIndex?: number;
   alt: string;
   caption?: string;
   ratio?: string;
@@ -60,7 +64,8 @@ export default function BeforeAfter({
         <Plate
           src={afterSrc}
           alt={alt + ' — after'}
-          seed={afterSeed}
+          theme={theme}
+          index={afterIndex}
           ratio="absolute inset-0"
           rounded="rounded-none"
           className="h-full w-full"
@@ -74,7 +79,8 @@ export default function BeforeAfter({
           <Plate
             src={beforeSrc}
             alt={alt + ' — before'}
-            seed={beforeSeed}
+            theme={theme}
+            index={beforeIndex}
             ratio="absolute inset-0"
             rounded="rounded-none"
             className="h-full w-full grayscale-[0.35]"
@@ -82,20 +88,20 @@ export default function BeforeAfter({
         </div>
 
         {/* Labels */}
-        <span className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/15 bg-ink/50 px-3 py-1.5 font-sans text-2xs uppercase tracking-luxe text-ivory/75 backdrop-blur-md">
+        <span className="pointer-events-none absolute left-4 top-4 rounded-full border border-line-2 bg-ink/50 px-3 py-1.5 font-sans text-2xs uppercase tracking-luxe text-ivory/75 backdrop-blur-md">
           Before
         </span>
-        <span className="pointer-events-none absolute right-4 top-4 rounded-full border border-champagne/30 bg-ink/50 px-3 py-1.5 font-sans text-2xs uppercase tracking-luxe text-champagne backdrop-blur-md">
+        <span className="pointer-events-none absolute right-4 top-4 rounded-full border border-accent/30 bg-ink/50 px-3 py-1.5 font-sans text-2xs uppercase tracking-luxe text-accent backdrop-blur-md">
           After
         </span>
 
         {/* Divider */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 w-px bg-champagne/80 shadow-[0_0_24px_rgba(217,188,140,0.55)]"
+          className="pointer-events-none absolute inset-y-0 w-px bg-accent/80 shadow-[0_0_24px_rgba(217,188,140,0.55)]"
           style={{ left: 'var(--pos)' }}
         >
-          <span className="absolute top-1/2 left-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-champagne/60 bg-ink/70 text-champagne backdrop-blur-md transition-transform duration-500 ease-luxe group-hover:scale-110">
+          <span className="absolute top-1/2 left-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-accent/60 bg-ink/70 text-accent backdrop-blur-md transition-transform duration-500 ease-luxe group-hover:scale-110">
             <MoveHorizontal className="h-4 w-4" strokeWidth={1.4} />
           </span>
         </div>

@@ -34,7 +34,7 @@ export default function StepTime() {
   return (
     <div>
       <p className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-2xs uppercase tracking-luxe text-ivory/40">
-        <Clock className="h-3.5 w-3.5 text-champagne" strokeWidth={1.5} aria-hidden="true" />
+        <Clock className="h-3.5 w-3.5 text-accent" strokeWidth={1.5} aria-hidden="true" />
         <span>{formatDuration(duration)} appointment</span>
         <span className="text-ivory/20" aria-hidden="true">
           /
@@ -45,7 +45,7 @@ export default function StepTime() {
       </p>
 
       {openCount === 0 && (
-        <div className="rounded-2xl border border-white/[0.09] bg-white/[0.015] p-7 text-center">
+        <div className="rounded-2xl border border-line bg-fill p-7 text-center">
           <p className="font-display text-xl font-light text-ivory">
             Nothing left on this day.
           </p>
@@ -77,10 +77,10 @@ export default function StepTime() {
                       className={cn(
                         'rounded-xl border py-3.5 text-sm tabular-nums transition-all duration-400 ease-luxe',
                         !slot.available
-                          ? 'cursor-not-allowed border-white/[0.04] text-ivory/15 line-through'
+                          ? 'cursor-not-allowed border-line text-ivory/15 line-through'
                           : selected
-                            ? 'border-transparent font-medium text-ink'
-                            : 'border-white/[0.09] text-ivory/75 hover:border-champagne/50 hover:text-champagne',
+                            ? 'border-transparent font-medium text-onaccent'
+                            : 'border-line text-ivory/75 hover:border-accent/50 hover:text-accent',
                       )}
                       style={selected ? { backgroundColor: accent } : undefined}
                     >

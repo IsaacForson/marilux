@@ -12,7 +12,7 @@ export default function Wordmark({
       <span
         aria-hidden="true"
         className={cn(
-          'grid place-items-center rounded-full border border-champagne/45 font-display leading-none text-champagne transition-all duration-700 ease-luxe',
+          'grid place-items-center rounded-full border border-accent/45 font-display leading-none text-accent transition-all duration-700 ease-luxe',
           condensed ? 'h-8 w-8 text-sm' : 'h-9 w-9 text-base',
         )}
       >
@@ -29,7 +29,7 @@ export default function Wordmark({
         </span>
         <span
           className={cn(
-            'overflow-hidden font-sans text-[0.5rem] uppercase tracking-wide2 text-champagne/60 transition-all duration-700 ease-luxe',
+            'overflow-hidden font-sans text-[0.5rem] uppercase tracking-wide2 text-accent/60 transition-all duration-700 ease-luxe',
             condensed ? 'mt-0 max-h-0 opacity-0' : 'mt-1 max-h-4 opacity-100',
           )}
         >

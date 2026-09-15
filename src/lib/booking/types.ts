@@ -41,10 +41,60 @@ export type BookingRecord = BookingInput & {
   price: number;
   deposit: number;
   depositStatus: DepositStatus;
+  status: BookingStatus;
   createdAt: string;
+  updatedAt: string;
+  /** Timestamps so the studio can see what the client has already received. */
+  confirmationSentAt?: string;
+  reminderSentAt?: string;
+  /** Free-text note the studio adds when declining or cancelling. */
+  staffNote?: string;
+  paymentProvider?: string;
+  paymentReference?: string;
 };
 
-export type DepositStatus = 'pending' | 'paid' | 'awaiting-link' | 'failed';
+export type DepositStatus = 'pending' | 'paid' | 'awaiting-link' | 'refunded' | 'failed';
+
+/**
+ * Lifecycle of a booking as the studio sees it.
+ *
+ * `pending` — submitted by the client, not yet reviewed.
+ * `confirmed` — the studio has accepted and the slot is held.
+ * `declined` — the studio could not take it.
+ * `completed` — the appointment happened.
+ * `cancelled` — called off after confirmation, by either side.
+ * `no-show` — the client did not arrive; the deposit is forfeited.
+ */
+export type BookingStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'declined'
+  | 'completed'
+  | 'cancelled'
+  | 'no-show';
+
+export const BOOKING_STATUSES: BookingStatus[] = [
+  'pending',
+  'confirmed',
+  'completed',
+  'declined',
+  'cancelled',
+  'no-show',
+];
+
+export const STATUS_LABEL: Record<BookingStatus, string> = {
+  pending: 'Awaiting review',
+  confirmed: 'Confirmed',
+  declined: 'Declined',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  'no-show': 'No-show',
+};
+
+/** Revenue is only counted once an appointment has actually happened. */
+export const EARNING_STATUSES: BookingStatus[] = ['completed'];
+/** These still hold a slot in the diary. */
+export const ACTIVE_STATUSES: BookingStatus[] = ['pending', 'confirmed'];
 
 export const PAYMENT_PROVIDERS = [
   {

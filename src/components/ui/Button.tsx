@@ -13,9 +13,9 @@ const base =
   'group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full font-sans font-medium uppercase tracking-luxe transition-colors duration-500 ease-luxe disabled:pointer-events-none disabled:opacity-40';
 
 const variants: Record<Variant, string> = {
-  gold: 'text-ink bg-champagne hover:bg-champagne-light',
-  outline: 'text-ivory border border-white/20 hover:border-champagne/70 hover:text-champagne',
-  ghost: 'text-ivory/70 hover:text-champagne',
+  gold: 'text-onaccent bg-champagne hover:bg-champagne-light',
+  outline: 'text-ivory border border-line-3 hover:border-accent/70 hover:text-accent',
+  ghost: 'text-ivory/70 hover:text-accent',
   ink: 'bg-ink text-ivory hover:bg-ink-700',
 };
 
