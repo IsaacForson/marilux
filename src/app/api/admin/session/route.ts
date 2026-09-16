@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  adminConfigured,
-  checkPassword,
-  createSessionToken,
-  sessionCookie,
-} from '@/lib/admin/auth';
+import { adminConfigured, sessionCookie, signIn } from '@/lib/admin/auth';
+import { countUsers } from '@/lib/admin/users';
 import { clientKey, rateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const schema = z.object({ password: z.string().min(1).max(200) });
+const schema = z.object({
+  email: z.string().trim().max(200).optional(),
+  password: z.string().min(1).max(200),
+});
 
-/** Sign in. Deliberately slow to brute-force: five attempts per ten minutes. */
+/** Sign in. Five attempts per ten minutes, per address. */
 export async function POST(req: Request) {
   if (!adminConfigured()) {
     return NextResponse.json(
@@ -31,14 +30,23 @@ export async function POST(req: Request) {
   }
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success || !checkPassword(parsed.data.password)) {
-    // One message for both cases: never reveal which part was wrong.
-    return NextResponse.json({ ok: false, error: 'Incorrect password.' }, { status: 401 });
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false, error: 'Enter your password.' }, { status: 422 });
   }
 
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(sessionCookie.name, createSessionToken(), sessionCookie.options);
+  const result = await signIn(parsed.data.email ?? '', parsed.data.password);
+  if (!result.ok) {
+    return NextResponse.json({ ok: false, error: result.error }, { status: 401 });
+  }
+
+  const res = NextResponse.json({ ok: true, bootstrap: result.bootstrap, name: result.name });
+  res.cookies.set(sessionCookie.name, result.token, sessionCookie.options);
   return res;
+}
+
+/** Tells the login form whether to ask for an email address. */
+export async function GET() {
+  return NextResponse.json({ ok: true, hasAccounts: (await countUsers()) > 0 });
 }
 
 /** Sign out. */

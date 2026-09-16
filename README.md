@@ -243,12 +243,46 @@ side effect. Every send reports per-channel outcome honestly, including the actu
 > email: delivered
 > sms: not sent — Sender ID not registered
 
-### Access
+### Accounts and access
 
-One studio password exchanged for an HMAC-signed, HTTP-only, 12-hour cookie. The password is
-compared in constant time, sign-in is rate-limited to five attempts per ten minutes, and the
-dashboard is `noindex`. **Without `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` the dashboard does
-not open at all** — there is no default password, and `/admin/setup` tells you what to set.
+Named accounts, each with their own email, password and role. Passwords are hashed with
+**scrypt** — a memory-hard KDF built into Node, salted per user, with the parameters stored
+alongside each hash so they can be raised later without invalidating anyone.
+
+| Role | Can do |
+| --- | --- |
+| **Owner** | Everything, including adding and removing accounts |
+| **Staff** | Bookings, prices, promotions, gallery, messages, settings |
+
+**First run:** `ADMIN_PASSWORD` signs you in **only while no account exists**. You use it once to
+create your owner account, after which it stops working for sign-in and becomes recovery only —
+so you can never be locked out, but it is not left as a permanent back door. Delete every account
+from the database and it works again.
+
+**Forgotten passwords** are self-service: a reset link is emailed through the same transport as
+client mail, so a studio with working booking email automatically has working recovery. Tokens
+are 32 random bytes, **stored only as a hash**, single-use, and expire in 45 minutes. Requesting
+a new link retires the previous one, and the endpoint returns an identical response whether or
+not the address exists.
+
+Sessions are HMAC-signed, HTTP-only, and 12 hours. Each one records who it belongs to and when
+it was issued, and is re-checked against the user on every request — so changing a password or
+deactivating someone **signs them out everywhere immediately** rather than leaving a valid cookie
+in the wild.
+
+Guards worth knowing: nobody can change their own role or deactivate themselves, the last active
+owner cannot be demoted or removed, sign-in is rate-limited to five attempts per ten minutes, and
+a wrong password and an unknown address return the same message after comparable work — so the
+form cannot be used to discover which addresses have accounts.
+
+### Changing your password
+
+From the dashboard: **Accounts → Your password**. Or use **Forgotten your password?** on the
+sign-in page.
+
+`ADMIN_SESSION_SECRET` signs the session cookie and has **no required format** — it is an HMAC
+key, so only length and unpredictability matter. Generate one with `openssl rand -base64 32`.
+Changing it signs everyone out.
 
 ### Reminders
 

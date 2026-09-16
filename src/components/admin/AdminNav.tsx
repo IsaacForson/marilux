@@ -11,6 +11,7 @@ import {
   MessageSquareText,
   Settings,
   Tag,
+  Users,
   Ticket,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ const LINKS = [
   { href: '/admin/gallery', label: 'Gallery', icon: Images },
   { href: '/admin/messages', label: 'Messages', icon: MessageSquareText },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
+  { href: '/admin/team', label: 'Accounts', icon: Users },
 ];
 
 export default function AdminNav({ pending }: { pending: number }) {

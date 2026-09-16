@@ -16,7 +16,9 @@ export default function AdminSetupPage() {
           <h1 className="display-sm">The dashboard is not configured yet.</h1>
           <p className="mt-4 leading-relaxed text-ivory/55">
             Add these to your environment, then restart the server. Until they are set, the
-            dashboard stays closed — there is no default password.
+            dashboard stays closed — there is no default password. You will use{' '}
+            <code className="text-accent">ADMIN_PASSWORD</code> once, to create your first
+            account; after that everyone signs in with their own email.
           </p>
 
           <pre className="mt-6 overflow-x-auto rounded-xl border border-line bg-fill p-5 text-xs leading-relaxed text-ivory/75">
