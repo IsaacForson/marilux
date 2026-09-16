@@ -26,10 +26,10 @@ const p = (file: string, alt: string): Photo => ({ src: '/images/' + file + '.jp
 
 export const PHOTOS: Record<ImageTheme, Photo[]> = {
   brows: [
-    p('brows-01', 'A makeup artist shaping and defining a client’s brows'),
+    p('brows-01', 'Close detail of laminated, brushed-up brows'),
     p('brows-02', 'Close detail of a defined brow and lash line'),
-    p('brows-03', 'A guest’s eye after brow and lash work'),
-    p('brows-04', 'A client smiling while her brows are tinted and shaped'),
+    p('brows-03', 'A guest in profile during a brow appointment'),
+    p('brows-04', 'A guest with defined, finished brows after treatment'),
     p('brows-05', 'Close portrait of finished brow and skin work'),
   ],
   lashes: [

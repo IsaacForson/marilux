@@ -1,7 +1,7 @@
 import type { BookingRecord } from '@/lib/booking/types';
 
 export type DeliveryResult = {
-  channel: 'email' | 'whatsapp';
+  channel: 'email' | 'sms' | 'whatsapp';
   target: 'owner' | 'customer';
   delivered: boolean;
   /** Present when delivery was skipped or failed — surfaced in logs, never to the client. */

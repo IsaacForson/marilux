@@ -3,19 +3,17 @@ import { SITE } from '@/lib/data/site';
 import type { BookingRecord } from '@/lib/booking/types';
 import type { DeliveryResult, NotificationAdapter } from './types';
 import { sendMail, smtpConfigured } from './smtp';
+import { brevoConfigured, sendViaBrevo } from './brevo';
 import { customerHtml, customerPlainText, ownerHtml, ownerPlainText } from './format';
 
 /**
  * Email delivery.
  *
- * Two transports, tried in order:
- *   1. SMTP — a Gmail App Password (or any provider). Simplest to set up, and
- *      what most studios will use.
- *   2. Gmail API via OAuth2 — no app password needed, and sent mail lands in
- *      the studio's own Sent folder.
- *
- * Whichever is configured wins; if both are, SMTP is used because it has
- * fewer moving parts.
+ * Three transports, tried in order:
+ *   1. Brevo HTTPS API — preferred, because serverless hosts commonly block
+ *      outbound SMTP ports and an HTTPS call always gets through.
+ *   2. SMTP — Brevo, Gmail App Password, or any provider.
+ *   3. Gmail API via OAuth2 — sent mail lands in the studio's own Sent folder.
  *
  * ---
  * Gmail API notes.
@@ -34,7 +32,7 @@ class GmailAdapter implements NotificationAdapter {
   readonly id = 'gmail';
 
   isConfigured() {
-    return smtpConfigured() || this.gmailApiConfigured();
+    return brevoConfigured() || smtpConfigured() || this.gmailApiConfigured();
   }
 
   private gmailApiConfigured() {
@@ -93,9 +91,22 @@ class GmailAdapter implements NotificationAdapter {
         target,
         delivered: false,
         detail:
-          'No email transport configured. Set SMTP_HOST/SMTP_USER/SMTP_PASSWORD, ' +
-          'or the Gmail API variables.',
+          'No email transport configured. Set BREVO_API_KEY, or ' +
+          'SMTP_HOST/SMTP_USER/SMTP_PASSWORD, or the Gmail API variables.',
       };
+    }
+
+    if (brevoConfigured()) {
+      try {
+        await sendViaBrevo({ to, subject, text, html, replyTo });
+        return { channel: 'email', target, delivered: true };
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : 'Brevo send failed';
+        // Fall through to SMTP if it is also configured — one transport being
+        // down should not stop a confirmation going out.
+        if (!smtpConfigured()) return { channel: 'email', target, delivered: false, detail };
+        console.warn('[email] Brevo API failed, falling back to SMTP: ' + detail);
+      }
     }
 
     if (smtpConfigured()) {

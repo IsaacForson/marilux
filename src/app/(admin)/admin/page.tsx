@@ -1,15 +1,26 @@
 import Link from 'next/link';
-import { ArrowRight, BellRing, CalendarClock, Mail, MessageSquare } from 'lucide-react';
+import {
+  ArrowRight,
+  BellRing,
+  CalendarClock,
+  Database,
+  Mail,
+  MessageSquare,
+  Smartphone,
+} from 'lucide-react';
 import { requireAdmin } from '@/lib/admin/auth';
-import { bookings, statusCount, summarise } from '@/lib/store/bookings';
+import { bookings, statusCount, summarise, usingDatabase } from '@/lib/store/bookings';
 import { ACTIVE_STATUSES } from '@/lib/booking/types';
 import { formatTime, GHS, toISODate } from '@/lib/utils';
 import { formatDuration } from '@/lib/data/services';
 import { smtpConfigured } from '@/lib/integrations/smtp';
+import { activeSmsProvider } from '@/lib/integrations/sms';
+import { SITE } from '@/lib/data/site';
 import AdminNav from '@/components/admin/AdminNav';
 import StatCard from '@/components/admin/StatCard';
 import { DepositPill, StatusPill } from '@/components/admin/StatusPill';
 import SendRemindersButton from '@/components/admin/SendRemindersButton';
+import ChannelTest from '@/components/admin/ChannelTest';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,10 +47,20 @@ export default async function AdminOverviewPage() {
 
   const awaiting = all.filter((b) => b.status === 'pending').slice(0, 5);
 
-  const emailReady = smtpConfigured() || Boolean(process.env.GOOGLE_REFRESH_TOKEN);
+  const emailReady =
+    Boolean(process.env.BREVO_API_KEY) ||
+    smtpConfigured() ||
+    Boolean(process.env.GOOGLE_REFRESH_TOKEN);
+  const emailVia = process.env.BREVO_API_KEY
+    ? 'Brevo API'
+    : smtpConfigured()
+      ? 'SMTP (' + (process.env.SMTP_HOST ?? '') + ')'
+      : 'Gmail API';
   const whatsappReady = Boolean(
     process.env.WHATSAPP_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID,
   );
+  const sms = activeSmsProvider();
+  const ownerNumber = process.env.OWNER_SMS || SITE.contact.phone;
 
   return (
     <>
@@ -209,23 +230,55 @@ export default async function AdminOverviewPage() {
         {/* Channel health */}
         <section className="mt-12" aria-labelledby="channels-title">
           <h2 id="channels-title" className="eyebrow mb-4">
-            Notification channels
+            System status
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
+            <ChannelRow
+              icon={Database}
+              label="Storage"
+              ready={usingDatabase}
+              readyHint="Bookings are saved to Supabase Postgres."
+              downHint="Using the local JSON file. Set DATABASE_URL before deploying — serverless filesystems do not persist."
+            />
             <ChannelRow
               icon={Mail}
               label="Email"
               ready={emailReady}
-              readyHint="Confirmations and reminders will send."
-              downHint="Set SMTP_HOST / SMTP_USER / SMTP_PASSWORD, or the Gmail API variables."
+              readyHint={'Sending via ' + emailVia + ', from ' + (process.env.SMTP_FROM ?? '') + '.'}
+              downHint="Set BREVO_API_KEY, or SMTP_HOST / SMTP_USER / SMTP_PASSWORD."
+            />
+            <ChannelRow
+              icon={Smartphone}
+              label="SMS"
+              ready={Boolean(sms)}
+              readyHint={'Sending through ' + (sms?.name ?? '') + '.'}
+              downHint="No provider configured. Arkesel or Hubtel are the cheapest for Ghana."
             />
             <ChannelRow
               icon={MessageSquare}
               label="WhatsApp"
               ready={whatsappReady}
               readyHint="Messages will send through the Cloud API."
-              downHint="Set WHATSAPP_TOKEN and WHATSAPP_PHONE_NUMBER_ID."
+              downHint="Paused — needs a dedicated number. See WHATSAPP-SETUP.md when you have one."
             />
+          </div>
+
+          <div className="mt-3 grid gap-3">
+            <ChannelTest
+              channel="sms"
+              title="SMS test"
+              blurb="Send a real text and see exactly what your provider says. Use this while setting SMS up — it reports the actual error and what to do about it."
+              defaultTo={ownerNumber}
+            />
+            {whatsappReady && (
+              <ChannelTest
+                channel="whatsapp"
+                title="WhatsApp test"
+                blurb="Send a real WhatsApp message and see exactly what Meta says."
+                defaultTo={process.env.OWNER_WHATSAPP || SITE.contact.phone}
+                secondaryLabel="Send as template"
+              />
+            )}
           </div>
         </section>
       </main>

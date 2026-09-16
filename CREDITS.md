@@ -10,10 +10,10 @@ nothing in the codebase needs to change.
 
 | File | Pexels photo ID | Source |
 | --- | --- | --- |
-| brows-01 | 7446908 | https://www.pexels.com/photo/7446908/ |
+| brows-01 | 7480275 | https://www.pexels.com/photo/7480275/ |
 | brows-02 | 7480276 | https://www.pexels.com/photo/7480276/ |
-| brows-03 | 7971172 | https://www.pexels.com/photo/7971172/ |
-| brows-04 | 7446904 | https://www.pexels.com/photo/7446904/ |
+| brows-03 | 7446906 | https://www.pexels.com/photo/7446906/ |
+| brows-04 | 8579879 | https://www.pexels.com/photo/8579879/ |
 | brows-05 | 8579880 | https://www.pexels.com/photo/8579880/ |
 | lashes-01 | 7446922 | https://www.pexels.com/photo/7446922/ |
 | lashes-02 | 7446923 | https://www.pexels.com/photo/7446923/ |

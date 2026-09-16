@@ -2,30 +2,15 @@ import 'server-only';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { BookingRecord, BookingStatus } from '@/lib/booking/types';
+import type { BookingRepository } from './types';
+import { dbConfigured } from './db';
+import { postgresRepository } from './postgresRepository';
 
-/**
- * Booking repository.
- *
- * This is the seam between the app and wherever bookings actually live. The
- * file-backed implementation below is deliberately simple and works on any
- * server with a writable disk (a VPS, Render, Railway, Fly).
- *
- * IMPORTANT for serverless hosts (Vercel, Netlify): the filesystem there is
- * ephemeral and per-invocation, so this store will silently lose data. Before
- * deploying to one of those, implement this same interface against Postgres,
- * Supabase or Turso — nothing outside this file needs to change.
- */
-export type BookingRepository = {
-  all(): Promise<BookingRecord[]>;
-  find(reference: string): Promise<BookingRecord | undefined>;
-  create(record: BookingRecord): Promise<BookingRecord>;
-  update(
-    reference: string,
-    patch: Partial<BookingRecord>,
-  ): Promise<BookingRecord | undefined>;
-  /** Bookings that would collide with a proposed slot. */
-  activeOn(isoDate: string): Promise<BookingRecord[]>;
-};
+export type { BookingRepository } from './types';
+
+/* ------------------------------------------------------------------ */
+/* JSON file store — the fallback when no database is configured       */
+/* ------------------------------------------------------------------ */
 
 const DATA_DIR = process.env.BOOKINGS_DIR || path.join(process.cwd(), '.data');
 const FILE = path.join(DATA_DIR, 'bookings.json');
@@ -40,7 +25,6 @@ let writeQueue: Promise<unknown> = Promise.resolve();
 
 function enqueue<T>(task: () => Promise<T>): Promise<T> {
   const run = writeQueue.then(task, task);
-  // Keep the chain alive even if one task rejects.
   writeQueue = run.catch(() => undefined);
   return run;
 }
@@ -112,7 +96,25 @@ const fileRepository: BookingRepository = {
   },
 };
 
-export const bookings: BookingRepository = fileRepository;
+/* ------------------------------------------------------------------ */
+/* Selection                                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Supabase whenever DATABASE_URL is present; otherwise the JSON file, so the
+ * project still runs with no database at all.
+ *
+ * The file store is not suitable for serverless hosts — their filesystems are
+ * ephemeral — which is why the dashboard reports which store is live.
+ */
+export const usingDatabase = dbConfigured();
+
+export const bookings: BookingRepository = usingDatabase
+  ? postgresRepository
+  : fileRepository;
+
+/** Exported so the import script can read the old store explicitly. */
+export const fileBookings = fileRepository;
 
 /* ------------------------------------------------------------------ */
 /* Reporting                                                           */

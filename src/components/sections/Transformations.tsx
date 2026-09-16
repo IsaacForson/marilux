@@ -9,7 +9,7 @@ const CASES = [
     alt: 'Combination brows',
     caption: 'Combination brows — two sessions, eight weeks apart. Corrective work over old pigment.',
     theme: 'brows' as const,
-    before: 2,
+    before: 1,
     after: 3,
   },
   {

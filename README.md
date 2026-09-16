@@ -32,6 +32,8 @@ look. Delete that file to start clean.
 npm run build && npm start   # production
 npm run typecheck            # tsc --noEmit
 npm run lint
+npm run db:migrate           # apply the Supabase schema
+npm run db:import            # move any local JSON bookings into Postgres
 ```
 
 ## Stack
@@ -46,8 +48,9 @@ npm run lint
 | Smooth scrolling | Lenis | Driven by the GSAP ticker, so both share one rAF loop |
 | Icons | lucide-react, react-icons | Lucide for UI, react-icons for brand marks |
 | Theming | CSS variables + Tailwind tokens | One class set drives both light and dark |
-| Email | nodemailer (SMTP) or Gmail API | SMTP + an App Password is the simple path |
-| Storage | JSON file behind a repository interface | Swap for Postgres before serverless |
+| Email | nodemailer over SMTP (Brevo or Gmail) | Free, and works on any host |
+| SMS | Provider registry — Arkesel · Hubtel · mNotify · Brevo · Twilio | Ghanaian providers are ~100× cheaper here |
+| Storage | Supabase Postgres (`postgres.js`), JSON file fallback | Selected by `DATABASE_URL` |
 
 ## Architecture
 
@@ -131,21 +134,35 @@ a broken box, so the layout can never collapse.
 
 ### Notifications
 
-On submission the booking fans out to every configured channel in parallel
-(`src/lib/integrations/notify.ts`). Delivery never blocks or fails the booking — if Gmail or
-WhatsApp is down, the guest is still confirmed and the server log names exactly which channel
-needs a manual follow-up:
+Every booking sends **four messages** — an email and an SMS to the client, an email and an SMS
+to the studio. Two channels each, deliberately: if one is missed or filtered, the other lands.
+
+Setup is in **[NOTIFICATIONS-SETUP.md](NOTIFICATIONS-SETUP.md)** (Brevo for email, Arkesel or
+Hubtel for SMS, with real costs).
+
+Deliveries run in parallel and never block or fail the booking — if a provider is down the guest
+is still confirmed, and the log names exactly which channel needs a manual follow-up:
 
 ```
-[booking] MLX-260915-SZ7DV — undelivered: whatsapp/owner (WhatsApp Cloud API is not configured.)
+[booking] MLX-260915-SZ7DV — undelivered: sms/customer (Insufficient balance)
 ```
 
-The owner receives name, phone, WhatsApp, email, service, date, time, notes and deposit status.
-The client receives a branded confirmation with the policy summary.
+The studio receives name, phone, email, service, date, time, **the client's notes** and deposit
+status. The client receives a branded email plus a one-segment SMS.
 
-> **WhatsApp note:** Meta only permits free-form messages inside a 24-hour customer-service
-> window. Owner notifications are unaffected. For client confirmations, get a message template
-> approved and set `WHATSAPP_CUSTOMER_TEMPLATE` — the adapter will then send the template instead.
+**SMS is written for cost.** Each message fits a single 160-character GSM-7 segment; the copy is
+normalised to the GSM alphabet automatically, because one curly apostrophe from a client note
+would switch the message to Unicode, halve the characters per segment and double the price.
+
+Adding a provider means implementing `SmsProvider` (four members) in
+`src/lib/integrations/sms.ts` and adding it to the registry. `SMS_PROVIDER=console` prints texts
+to the terminal so the whole flow can be walked locally without an account.
+
+> **WhatsApp is paused.** Email and SMS cover everything it would have. Turning it on needs a
+> number that is *not* in use on the WhatsApp phone app — registering with the Cloud API removes
+> it from that app permanently, and that is a Meta platform rule, not a setting. The code is
+> written and tested and activates the moment credentials appear; see
+> **[WHATSAPP-SETUP.md](WHATSAPP-SETUP.md)**.
 
 ### Payments
 
@@ -204,7 +221,7 @@ rig, no intro curtain, no custom cursor.
 
 | Screen | What it does |
 | --- | --- |
-| **Overview** | Deposits collected, revenue completed, booked-not-yet-delivered, balance due in studio, average value, forfeited deposits. Today's diary, the queue awaiting review, and live notification-channel status. |
+| **Overview** | Deposits collected, revenue completed, booked-not-yet-delivered, balance due in studio, average value, forfeited deposits. Today's diary, the queue awaiting review, live status for storage/email/SMS/WhatsApp, and a **send a real test message** panel for each channel. |
 | **Bookings** | Every appointment, filtered by status and searchable by name, reference, email, phone or service. |
 | **Booking detail** | Full client record: contact details, the treatment, duration, specialist, **the client's own notes** (allergies, pregnancy, sensitivities), deposit state, message history, and every previous booking by that client. |
 | **Schedule** | Week view with opening hours, chair time, booked value, and each client's notes inline. |
@@ -216,7 +233,7 @@ Accepting or declining offers to message the client in the same step — a check
 side effect. Every send reports per-channel outcome honestly, including the actual failure reason:
 
 > email: delivered
-> whatsapp: not sent — WhatsApp Cloud API is not configured.
+> sms: not sent — Sender ID not registered
 
 ### Access
 
@@ -235,17 +252,49 @@ cron with a `x-cron-key` header matching `CRON_SECRET`:
 curl -X POST https://your-domain/api/admin/reminders -H "x-cron-key: $CRON_SECRET"
 ```
 
-## Storage
+## Storage — Supabase
 
-Bookings persist through a repository interface (`src/lib/store/bookings.ts`). The bundled
-implementation is a JSON file under `.data/`, with writes serialised through a promise queue and
-committed by atomic rename — so two bookings landing in the same tick cannot clobber each other,
-and a crash mid-write cannot corrupt the file.
+Bookings live in Supabase Postgres. Two implementations sit behind one interface
+(`src/lib/store/types.ts`) and the choice is automatic:
 
-> **Before deploying to Vercel, Netlify or any serverless host:** their filesystems are ephemeral
-> and per-invocation, so this store will silently lose data. Implement the same
-> `BookingRepository` interface against Postgres, Supabase or Turso. Nothing outside that one file
-> needs to change.
+| `DATABASE_URL` | Store used |
+| --- | --- |
+| set | Supabase Postgres (`postgresRepository`) |
+| unset | JSON file under `.data/` (`fileRepository`) |
+
+The dashboard's **System status** panel says which is live, so you can never deploy thinking one
+is active when it is not.
+
+### Setting it up
+
+```bash
+# 1. Connection string — Supabase → Project Settings → Database → Transaction pooler (6543).
+#    Percent-encode the password: % → %25, ? → %3F, $ → %24, * → %2A
+DATABASE_URL=postgresql://postgres.<ref>:<encoded-pw>@aws-1-<region>.pooler.supabase.com:6543/postgres
+
+npm run db:migrate    # applies supabase/migrations/*.sql, idempotent
+npm run db:import     # optional: moves .data/bookings.json into Postgres
+```
+
+Use the **transaction** pooler (port 6543) — it is what serverless needs, and the driver is
+configured with `prepare: false` to match. `db:migrate` switches itself to the session pooler
+(5432), because migrations need one sustained connection.
+
+### Schema notes
+
+- **Dates are `date` + minutes-from-midnight, not `timestamptz`.** The studio thinks in local
+  wall-clock time; a timezone conversion is the classic way to move an appointment by an hour.
+  Every read renders the date with `to_char` so nothing can drift.
+- **RLS is on with no policies, and `anon`/`authenticated` have no grants.** This table holds
+  names, phone numbers and medical disclosures. The app connects as `postgres` over the pooler
+  and bypasses RLS; the lockdown is a hard backstop so the public PostgREST endpoint can never
+  expose client data even if a key leaks.
+- `updated_at` is maintained by a trigger, not the application.
+
+### Swapping databases
+
+Implement `BookingRepository` (five methods) against anything else and point `bookings` at it.
+Nothing outside `src/lib/store/` needs to change.
 
 ## Performance
 
