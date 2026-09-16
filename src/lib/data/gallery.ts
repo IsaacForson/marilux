@@ -1,4 +1,4 @@
-import type { ImageTheme } from './images';
+import { photo, type ImageTheme } from './images';
 
 export type GalleryItem = {
   id: string;
@@ -60,3 +60,17 @@ export const GALLERY: GalleryItem[] = raw.map((item, i) => ({
   id: 'g' + (i + 1),
   kind: item.kind ?? 'image',
 }));
+
+/** Resolve the photograph a gallery item should show. */
+export function galleryPhotoSrc(item: Pick<GalleryItem, 'src' | 'theme' | 'index'>) {
+  return item.src || photo(item.theme, item.index).src;
+}
+
+/** Resolve the before-image for a comparison, when the item has one. */
+export function galleryBeforeSrc(
+  item: Pick<GalleryItem, 'beforeSrc' | 'theme' | 'index' | 'kind'>,
+) {
+  if (item.beforeSrc) return item.beforeSrc;
+  if (item.kind === 'before-after') return photo(item.theme, item.index + 1).src;
+  return undefined;
+}

@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { db, dbConfigured } from '@/lib/store/db';
+import { db, dbConfigured, queryOrNull } from '@/lib/store/db';
 import {
   SERVICE_CATEGORIES,
   type Service,
@@ -72,41 +72,17 @@ const EMPTY = { categories: [] as CategoryRow[], services: [] as ServiceRow[] };
 async function loadOverrides() {
   if (!dbConfigured()) return EMPTY;
 
-  const timeoutMs = Number(process.env.CATALOGUE_TIMEOUT_MS || 8000);
-
-  try {
-    const sql = db();
-    // Capture rather than race away a rejection: a Promise.race that only sees
-    // the timeout hides the actual database error, which is exactly the
-    // information needed when a read stops working.
-    const read = Promise.all([
+  const sql = db();
+  const rows = await queryOrNull('catalogue', () =>
+    Promise.all([
       sql<CategoryRow[]>`select * from public.category_overrides`,
       sql<ServiceRow[]>`select * from public.service_overrides`,
-    ]).then(
-      (rows) => ({ rows, error: null as unknown }),
-      (error: unknown) => ({ rows: null, error }),
-    );
+    ]),
+  );
 
-    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
-    const result = await Promise.race([read, timeout]);
-
-    if (!result) {
-      console.warn(
-        '[catalogue] overrides timed out after ' + timeoutMs + 'ms — using shipped prices',
-      );
-      return EMPTY;
-    }
-    if (result.error || !result.rows) {
-      console.error('[catalogue] override read failed:', result.error);
-      return EMPTY;
-    }
-
-    const [categories, services] = result.rows;
-    return { categories, services };
-  } catch (error) {
-    console.error('[catalogue] override read failed, using shipped prices:', error);
-    return EMPTY;
-  }
+  if (!rows) return EMPTY;
+  const [categories, services] = rows;
+  return { categories, services };
 }
 
 /** The full catalogue including anything the studio has hidden. Admin views. */

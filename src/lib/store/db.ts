@@ -54,3 +54,55 @@ export function db() {
 
   return globalThis.__mariluxSql;
 }
+
+function timeoutMs() {
+  return Number(process.env.CATALOGUE_TIMEOUT_MS || 8000);
+}
+
+function describeError(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+/**
+ * Run a database read without stalling the request.
+ *
+ * Rejections are captured on the query itself, so a timeout cannot leave an
+ * unhandled Postgres error for Next.js to paint as a red overlay. Callers
+ * treat `null` as "use the fallback".
+ */
+export async function queryOrNull<T>(
+  label: string,
+  run: () => Promise<T>,
+): Promise<T | null> {
+  const ms = timeoutMs();
+  const captured = Promise.resolve()
+    .then(run)
+    .then(
+      (value) => ({ status: 'ok' as const, value }),
+      (error: unknown) => ({ status: 'error' as const, error }),
+    );
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timedOut = new Promise<{ status: 'timeout' }>((resolve) => {
+    timer = setTimeout(() => resolve({ status: 'timeout' }), ms);
+  });
+
+  try {
+    const result = await Promise.race([captured, timedOut]);
+    if (result.status === 'timeout') {
+      console.warn('[' + label + '] timed out after ' + ms + 'ms');
+      return null;
+    }
+    if (result.status === 'error') {
+      console.warn('[' + label + '] ' + describeError(result.error));
+      return null;
+    }
+    return result.value;
+  } catch (error) {
+    console.warn('[' + label + '] ' + describeError(error));
+    return null;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}

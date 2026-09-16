@@ -1,7 +1,12 @@
 import 'server-only';
 import { cache } from 'react';
-import { db, dbConfigured } from '@/lib/store/db';
-import { GALLERY, type GalleryItem } from '@/lib/data/gallery';
+import { db, dbConfigured, queryOrNull } from '@/lib/store/db';
+import {
+  GALLERY,
+  galleryBeforeSrc,
+  galleryPhotoSrc,
+  type GalleryItem,
+} from '@/lib/data/gallery';
 
 /**
  * The portfolio.
@@ -42,48 +47,45 @@ const CATEGORY_LABEL: Record<string, string> = {
   all: 'Marilux',
 };
 
-const toItem = (r: Row): LiveGalleryItem => ({
-  id: 'db-' + r.id,
-  dbId: r.id,
-  title: r.title,
-  caption: r.caption ?? undefined,
-  categorySlug: r.category_slug,
-  category: CATEGORY_LABEL[r.category_slug] ?? 'Marilux',
-  kind: r.kind,
-  span: r.span,
-  // `theme`/`index` only matter when no real image exists; the picker
-  // guarantees one, so these are a harmless fallback.
-  theme: 'portrait',
-  index: 0,
-  src: r.image_url ?? undefined,
-  beforeSrc: r.before_url ?? undefined,
-  imageUrl: r.image_url ?? undefined,
-  beforeUrl: r.before_url ?? undefined,
-});
+const DEFAULT_BY_TITLE = new Map(GALLERY.map((item) => [item.title, item]));
+
+const toItem = (r: Row): LiveGalleryItem => {
+  const fallback = DEFAULT_BY_TITLE.get(r.title);
+  const imageUrl = r.image_url || (fallback ? galleryPhotoSrc(fallback) : undefined);
+  const beforeUrl =
+    r.before_url ||
+    (fallback && r.kind === 'before-after' ? galleryBeforeSrc(fallback) : undefined);
+
+  return {
+    id: 'db-' + r.id,
+    dbId: r.id,
+    title: r.title,
+    caption: r.caption ?? undefined,
+    categorySlug: r.category_slug,
+    category: CATEGORY_LABEL[r.category_slug] ?? 'Marilux',
+    kind: r.kind,
+    span: r.span,
+    theme: fallback?.theme ?? 'portrait',
+    index: fallback?.index ?? 0,
+    src: imageUrl,
+    beforeSrc: beforeUrl,
+    imageUrl,
+    beforeUrl,
+  };
+};
 
 async function loadRows(includeHidden = false): Promise<Row[]> {
   if (!dbConfigured()) return [];
-  try {
-    const sql = db();
-    const timeoutMs = Number(process.env.CATALOGUE_TIMEOUT_MS || 8000);
-    const read = includeHidden
-      ? sql<Row[]>`select * from public.gallery_items order by sort_order, created_at desc`
-      : sql<Row[]>`select * from public.gallery_items
-                   where is_active order by sort_order, created_at desc`;
-
-    const rows = await Promise.race([
-      read,
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
-    ]);
-    if (!rows) {
-      console.warn('[gallery] read timed out — using the shipped gallery');
-      return [];
-    }
-    return rows;
-  } catch (error) {
-    console.error('[gallery] read failed, using the shipped gallery:', error);
-    return [];
-  }
+  const sql = db();
+  const rows = await queryOrNull(
+    'gallery',
+    () =>
+      includeHidden
+        ? sql<Row[]>`select * from public.gallery_items order by sort_order, created_at desc`
+        : sql<Row[]>`select * from public.gallery_items
+                     where is_active order by sort_order, created_at desc`,
+  );
+  return rows ?? [];
 }
 
 /** What the public gallery renders. */
@@ -154,12 +156,14 @@ export async function seedGalleryFromDefaults() {
 
   let order = 0;
   for (const item of GALLERY) {
+    const imageUrl = galleryPhotoSrc(item);
+    const beforeUrl = galleryBeforeSrc(item) ?? null;
     await sql`
       insert into public.gallery_items
-        (title, caption, category_slug, image_url, kind, span, sort_order, is_active)
+        (title, caption, category_slug, image_url, before_url, kind, span, sort_order, is_active)
       values
-        (${item.title}, ${item.caption ?? null}, ${item.categorySlug}, ${null},
-         ${item.kind ?? 'image'}, ${item.span}, ${order}, true)`;
+        (${item.title}, ${item.caption ?? null}, ${item.categorySlug}, ${imageUrl},
+         ${beforeUrl}, ${item.kind ?? 'image'}, ${item.span}, ${order}, true)`;
     order += 1;
   }
   return { seeded: GALLERY.length };

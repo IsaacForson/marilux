@@ -1,5 +1,5 @@
 import { requireAdmin } from '@/lib/admin/auth';
-import { getSetting } from '@/lib/settings/store';
+import { getAllSettings } from '@/lib/settings/store';
 import { bookings, statusCount } from '@/lib/store/bookings';
 import { usingDatabase } from '@/lib/store/bookings';
 import AdminNav from '@/components/admin/AdminNav';
@@ -10,10 +10,8 @@ export const dynamic = 'force-dynamic';
 export default async function AdminSettingsPage() {
   await requireAdmin();
 
-  const [notifications, booking, banner, all] = await Promise.all([
-    getSetting('notifications'),
-    getSetting('booking'),
-    getSetting('banner'),
+  const [{ notifications, booking, banner }, all] = await Promise.all([
+    getAllSettings(),
     bookings.all(),
   ]);
 

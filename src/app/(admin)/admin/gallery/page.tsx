@@ -1,6 +1,6 @@
 import { requireAdmin } from '@/lib/admin/auth';
 import { galleryIsCustom, getGalleryForAdmin } from '@/lib/media/gallery';
-import { GALLERY } from '@/lib/data/gallery';
+import { GALLERY, galleryBeforeSrc, galleryPhotoSrc } from '@/lib/data/gallery';
 import { bookings, statusCount, usingDatabase } from '@/lib/store/bookings';
 import { storageBackend } from '@/lib/media/storage';
 import AdminNav from '@/components/admin/AdminNav';
@@ -27,6 +27,8 @@ export default async function AdminGalleryPage() {
         span: g.span,
         sortOrder: i,
         isActive: true,
+        imageUrl: galleryPhotoSrc(g),
+        beforeUrl: galleryBeforeSrc(g),
       }));
 
   return (
