@@ -102,6 +102,9 @@ Almost everything the studio will want to change lives in `src/lib/data/`:
 
 ### Photography
 
+**These are the fallbacks.** Anything the studio uploads in the dashboard takes precedence; what
+follows is what renders before they do, and wherever they have not set an image.
+
 45 photographs live in `public/images/`, organised into themed pools in
 `src/lib/data/images.ts` (`brows`, `lashes`, `hair`, `nails`, `skin`, `spa`, `makeup`,
 `portrait`, `studio`). Components ask for a pool and a slot rather than a filename:
@@ -228,6 +231,7 @@ rig, no intro curtain, no custom cursor.
 | **Prices** | Every treatment's price, duration and visibility, editable inline. Live on the website the moment you save. |
 | **Promos** | Automatic discounts and coupon codes — percentage or fixed, scoped to everything, a category or one treatment, with dates and usage limits. |
 | **Messages** | Rewrite any confirmation, reminder or decline in your own words, with a live preview and SMS segment count. |
+| **Gallery** | The portfolio — upload work, caption it, set its size in the grid, reorder, hide. |
 | **Settings** | Where bookings reach you, which channels are on, deposit percentage, booking window, and a site-wide announcement banner. |
 
 Actions: accept, decline, mark completed, no-show, cancel, reopen; set deposit state; send or
@@ -291,6 +295,37 @@ subject, email body and SMS. **A blank field falls back to the shipped copy** �
 rewrite only the text message and keep our email. Templates use `{{token}}` placeholders, and the
 editor previews against a sample booking, flags unrecognised tokens, and counts SMS segments so
 the cost of a longer message is visible before it is saved.
+
+### Images
+
+Uploads are normalised on the way in with sharp: EXIF-rotated upright, resized to a 2000px
+longest edge, and converted to WebP at quality 82. A 4 MB phone photograph lands as a couple of
+hundred kilobytes. That processing matters more than it sounds — the studio will upload straight
+from a phone, and raw camera files would be the single biggest thing slowing the site down.
+
+Two storage backends behind one interface (`src/lib/media/storage.ts`):
+
+| Configured | Backend |
+| --- | --- |
+| `SUPABASE_URL` + `SUPABASE_SECRET_KEY` | Supabase Storage, served from its CDN |
+| neither | Postgres `bytea`, served by `/api/media/[id]` |
+
+The bucket is created by `npm run db:migrate` (migration `0004`), not by hand in the dashboard —
+public read, **no public write**. Uploads go through `/api/admin/media`, which requires an admin
+session and the server-only secret key.
+
+Supabase renamed its keys: `service_role` → **secret**, `anon` → **publishable**. Both old and
+new variable names are accepted. A publishable key is treated as *not configured* rather than as
+a credential — pasting the wrong one is an easy mistake, and degrading to the database keeps
+uploads working while the dashboard's storage test explains what to change.
+
+The Postgres backend is the default because it needs nothing beyond `DATABASE_URL`. Responses
+are `immutable` with a one-year max-age and filenames carry a timestamp, so each image is fetched
+exactly once — which is what makes it viable. Moving to Supabase Storage later is two environment
+variables; existing images keep working, because each row records its own provider and URL.
+
+Images attach to a service, a category, or a gallery item, and the picker also accepts a pasted
+URL. Clearing one falls back to the shipped photography rather than leaving a hole.
 
 ### Settings
 

@@ -28,6 +28,7 @@ export type SignaturePick = {
   priceFrom?: boolean;
   category: string;
   categorySlug: string;
+  imageUrl?: string;
 };
 
 export default function SignatureServices({ picks }: { picks: SignaturePick[] }) {
@@ -95,6 +96,7 @@ export default function SignatureServices({ picks }: { picks: SignaturePick[] })
                 className="group block h-full"
               >
                 <Plate
+                  src={service.imageUrl}
                   alt={service.name}
                   theme={themeFor(service.categorySlug)}
                   index={i}

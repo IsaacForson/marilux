@@ -1,11 +1,11 @@
 import { FaInstagram } from 'react-icons/fa';
 import { SITE } from '@/lib/data/site';
-import { GALLERY } from '@/lib/data/gallery';
+import { getGallery } from '@/lib/media/gallery';
 import Reveal from '@/components/ui/Reveal';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Plate from '@/components/ui/Plate';
 
-const FEED = GALLERY.slice(0, 8);
+
 
 /**
  * Instagram wall.
@@ -14,7 +14,9 @@ const FEED = GALLERY.slice(0, 8);
  * Graph API later means replacing `FEED` with the fetched media array — the
  * item shape is deliberately identical.
  */
-export default function InstagramStrip() {
+export default async function InstagramStrip() {
+  const FEED = (await getGallery()).slice(0, 8);
+
   return (
     <section className="relative py-24 sm:py-32" aria-labelledby="instagram-title">
       <div className="shell">
@@ -55,6 +57,7 @@ export default function InstagramStrip() {
               aria-label={'View on Instagram: ' + item.title}
             >
               <Plate
+                src={item.src}
                 alt={item.title}
                 theme={item.theme}
                 index={item.index}

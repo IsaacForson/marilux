@@ -166,6 +166,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                   className="group block h-full overflow-hidden rounded-[1.75rem] border border-line transition-colors duration-700 hover:border-line-3"
                 >
                   <Plate
+                    src={s.imageUrl}
                     alt={s.name}
                     theme={themeFor(category.slug)}
                     index={i + 1}

@@ -100,6 +100,8 @@ export default function Lightbox({
                   {item.kind === 'before-after' ? (
                     <BeforeAfter
                       alt={item.title}
+                      afterSrc={item.src}
+                      beforeSrc={item.beforeSrc}
                       theme={item.theme}
                       beforeIndex={item.index + 1}
                       afterIndex={item.index}

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { FaInstagram, FaTiktok } from 'react-icons/fa';
 import { buildMetadata } from '@/lib/seo';
 import { SITE } from '@/lib/data/site';
+import { getGallery } from '@/lib/media/gallery';
 import MasonryGrid from '@/components/gallery/MasonryGrid';
 import BeforeAfter from '@/components/gallery/BeforeAfter';
 import PageHero from '@/components/sections/PageHero';
@@ -46,7 +47,9 @@ const CASES = [
   },
 ];
 
-export default function GalleryPage() {
+export default async function GalleryPage() {
+  const items = await getGallery();
+
   return (
     <>
       <PageHero
@@ -81,7 +84,7 @@ export default function GalleryPage() {
       </PageHero>
 
       <section className="shell py-12 sm:py-16" aria-label="Portfolio">
-        <MasonryGrid />
+        <MasonryGrid items={items} />
       </section>
 
       <section

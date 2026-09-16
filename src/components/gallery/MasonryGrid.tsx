@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, SlidersHorizontal } from 'lucide-react';
-import { GALLERY, GALLERY_FILTERS, type GalleryItem } from '@/lib/data/gallery';
+import { GALLERY_FILTERS, type GalleryItem } from '@/lib/data/gallery';
 import { BEZIER } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 import Plate from '@/components/ui/Plate';
@@ -24,13 +24,13 @@ const RATIO: Record<GalleryItem['span'], string> = {
  * filtering never triggers a measure-and-reposition pass. Items animate with
  * transform and opacity only, which keeps the re-flow at 60fps.
  */
-export default function MasonryGrid() {
+export default function MasonryGrid({ items: source }: { items: GalleryItem[] }) {
   const [filter, setFilter] = useState<string>('all');
   const [active, setActive] = useState<number | null>(null);
 
   const items = useMemo(
-    () => (filter === 'all' ? GALLERY : GALLERY.filter((g) => g.categorySlug === filter)),
-    [filter],
+    () => (filter === 'all' ? source : source.filter((g) => g.categorySlug === filter)),
+    [filter, source],
   );
 
   return (
@@ -86,7 +86,7 @@ export default function MasonryGrid() {
           >
             <button
               type="button"
-              onClick={() => setActive(GALLERY.indexOf(item))}
+              onClick={() => setActive(source.indexOf(item))}
               data-cursor="view"
               className="block h-full w-full text-left"
               aria-label={'View ' + item.title}
@@ -127,7 +127,7 @@ export default function MasonryGrid() {
       </div>
 
       <Lightbox
-        items={GALLERY}
+        items={source}
         index={active}
         onClose={() => setActive(null)}
         onNavigate={setActive}

@@ -46,7 +46,10 @@ export default function Plate({
   rounded = 'rounded-[1.75rem]',
   position = 'center',
 }: PlateProps) {
-  const resolved = src ? { src, alt: alt ?? '' } : theme ? photo(theme, index) : null;
+  // An empty string counts as "not set" — the admin clears a field to an
+  // empty string, and that must fall back to the themed default.
+  const chosen = src && src.trim() ? src.trim() : undefined;
+  const resolved = chosen ? { src: chosen, alt: alt ?? '' } : theme ? photo(theme, index) : null;
   const label = alt ?? resolved?.alt ?? '';
 
   const h1 = 10 + (seed % 7) * 5.5;
@@ -69,6 +72,9 @@ export default function Plate({
           fill
           priority={priority}
           sizes={sizes}
+          // Images the studio uploaded are already resized and compressed on
+          // the way in, so a second optimisation pass would only cost latency.
+          unoptimized={resolved.src.startsWith('/api/media/')}
           className="object-cover"
           style={{ objectPosition: position }}
         />

@@ -52,6 +52,7 @@ export default async function Rooms() {
                   className="group relative block h-full overflow-hidden rounded-[1.75rem]"
                 >
                   <Plate
+                    src={cat.imageUrl}
                     alt={cat.name + ' at Marilux Beauty Bar'}
                     theme={themeFor(cat.slug)}
                     index={i}

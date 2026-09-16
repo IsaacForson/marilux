@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   ListChecks,
   LogOut,
+  Images,
   MessageSquareText,
   Settings,
   Tag,
@@ -22,6 +23,7 @@ const LINKS = [
   { href: '/admin/schedule', label: 'Schedule', icon: CalendarDays },
   { href: '/admin/services', label: 'Prices', icon: Tag },
   { href: '/admin/promotions', label: 'Promos', icon: Ticket },
+  { href: '/admin/gallery', label: 'Gallery', icon: Images },
   { href: '/admin/messages', label: 'Messages', icon: MessageSquareText },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];

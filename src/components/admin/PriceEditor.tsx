@@ -7,6 +7,7 @@ import type { LiveCategory } from '@/lib/catalogue';
 import { formatDuration } from '@/lib/data/services';
 import { cn, GHS } from '@/lib/utils';
 import SaveBar from './SaveBar';
+import MediaPicker from './MediaPicker';
 
 type Edit = {
   price?: number;
@@ -14,7 +15,10 @@ type Edit = {
   name?: string;
   badge?: string;
   isActive?: boolean;
+  imageUrl?: string | null;
 };
+
+type CategoryEdit = { imageUrl?: string | null };
 
 /**
  * Price and availability editor.
@@ -26,13 +30,14 @@ type Edit = {
 export default function PriceEditor({ categories }: { categories: LiveCategory[] }) {
   const router = useRouter();
   const [edits, setEdits] = useState<Record<string, Edit>>({});
+  const [catEdits, setCatEdits] = useState<Record<string, CategoryEdit>>({});
   const [open, setOpen] = useState<string | null>(categories[0]?.slug ?? null);
   const [query, setQuery] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const dirty = Object.keys(edits).length > 0;
+  const dirty = Object.keys(edits).length > 0 || Object.keys(catEdits).length > 0;
 
   const key = (c: string, s: string) => c + '/' + s;
 
@@ -80,7 +85,22 @@ export default function PriceEditor({ categories }: { categories: LiveCategory[]
         durationMinutes: edit.durationMinutes ?? current?.duration ?? null,
         name: (edit.name ?? current?.name) || null,
         badge: (edit.badge ?? current?.badge) || null,
+        imageUrl:
+          edit.imageUrl !== undefined ? edit.imageUrl : (current?.imageUrl ?? null),
         isActive: edit.isActive ?? current?.isActive ?? true,
+      };
+    });
+
+    const categoryPayload = Object.entries(catEdits).map(([slug, e]) => {
+      const c = categories.find((x) => x.slug === slug);
+      return {
+        slug,
+        name: c?.name ?? null,
+        tagline: c?.tagline ?? null,
+        summary: c?.summary ?? null,
+        intro: c?.intro ?? null,
+        imageUrl: e.imageUrl !== undefined ? e.imageUrl : (c?.imageUrl ?? null),
+        isActive: c?.isActive ?? true,
       };
     });
 
@@ -88,14 +108,14 @@ export default function PriceEditor({ categories }: { categories: LiveCategory[]
       const res = await fetch('/api/admin/services', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ services }),
+        body: JSON.stringify({ services, categories: categoryPayload }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || 'Could not save.');
       setEdits({});
-      setMessage(
-        services.length + (services.length === 1 ? ' service' : ' services') + ' updated and live.',
-      );
+      setCatEdits({});
+      const n = services.length + categoryPayload.length;
+      setMessage(n + (n === 1 ? ' change' : ' changes') + ' saved and live on the website.');
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not save.');
@@ -153,32 +173,49 @@ export default function PriceEditor({ categories }: { categories: LiveCategory[]
 
           return (
             <section key={category.slug} className="overflow-hidden rounded-2xl border border-line">
-              <h2>
-                <button
-                  type="button"
-                  onClick={() => setOpen(isOpen && !query ? null : category.slug)}
-                  aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-4 bg-fill px-5 py-4 text-left transition-colors hover:bg-fill-2"
-                >
-                  <span>
-                    <span className="block font-display text-lg font-light text-ivory">
-                      {category.name}
+              <div className="flex items-center gap-3 bg-fill px-5 py-4">
+                <MediaPicker
+                  compact
+                  folder="categories"
+                  label={category.name + ' cover image'}
+                  value={
+                    catEdits[category.slug]?.imageUrl !== undefined
+                      ? catEdits[category.slug].imageUrl
+                      : category.imageUrl
+                  }
+                  onChange={(imageUrl) => {
+                    setCatEdits((p) => ({ ...p, [category.slug]: { imageUrl } }));
+                    setMessage(null);
+                  }}
+                />
+
+                <h2 className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setOpen(isOpen && !query ? null : category.slug)}
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center justify-between gap-4 text-left"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate font-display text-lg font-light text-ivory">
+                        {category.name}
+                      </span>
+                      <span className="mt-0.5 block font-sans text-2xs uppercase tracking-luxe text-ivory/35">
+                        {category.services.length} treatments
+                        {changed > 0 && ' · ' + changed + ' edited'}
+                      </span>
                     </span>
-                    <span className="mt-0.5 block font-sans text-2xs uppercase tracking-luxe text-ivory/35">
-                      {category.services.length} treatments
-                      {changed > 0 && ' · ' + changed + ' edited'}
-                    </span>
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      'h-4 w-4 shrink-0 text-ivory/40 transition-transform duration-300',
-                      isOpen && 'rotate-180',
-                    )}
-                    strokeWidth={1.5}
-                    aria-hidden="true"
-                  />
-                </button>
-              </h2>
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 shrink-0 text-ivory/40 transition-transform duration-300',
+                        isOpen && 'rotate-180',
+                      )}
+                      strokeWidth={1.5}
+                      aria-hidden="true"
+                    />
+                  </button>
+                </h2>
+              </div>
 
               {isOpen && (
                 <ul className="divide-y divide-line">
@@ -194,11 +231,23 @@ export default function PriceEditor({ categories }: { categories: LiveCategory[]
                       <li
                         key={service.slug}
                         className={cn(
-                          'grid gap-3 px-5 py-4 transition-colors sm:grid-cols-[1fr,7rem,7rem,auto] sm:items-center sm:gap-4',
+                          'grid gap-3 px-5 py-4 transition-colors sm:grid-cols-[2.75rem,1fr,7rem,7rem,auto] sm:items-center sm:gap-4',
                           touched && 'bg-accent/[0.04]',
                           !active && 'opacity-55',
                         )}
                       >
+                        <MediaPicker
+                          compact
+                          folder="services"
+                          label={service.name + ' image'}
+                          value={
+                            edit.imageUrl !== undefined ? edit.imageUrl : service.imageUrl
+                          }
+                          onChange={(imageUrl) =>
+                            setEdit(category.slug, service.slug, { imageUrl })
+                          }
+                        />
+
                         <div className="min-w-0">
                           <p className="truncate text-ivory">{service.name}</p>
                           <p className="mt-0.5 truncate font-sans text-2xs uppercase tracking-luxe text-ivory/30">
@@ -302,7 +351,10 @@ export default function PriceEditor({ categories }: { categories: LiveCategory[]
         dirty={dirty}
         saving={saving}
         onSave={save}
-        onReset={() => setEdits({})}
+        onReset={() => {
+          setEdits({});
+          setCatEdits({});
+        }}
         message={message}
         error={error}
       />

@@ -15,12 +15,14 @@ import { formatTime, GHS, toISODate } from '@/lib/utils';
 import { formatDuration } from '@/lib/data/services';
 import { smtpConfigured } from '@/lib/integrations/smtp';
 import { activeSmsProvider } from '@/lib/integrations/sms';
+import { storageBackend } from '@/lib/media/storage';
 import { SITE } from '@/lib/data/site';
 import AdminNav from '@/components/admin/AdminNav';
 import StatCard from '@/components/admin/StatCard';
 import { DepositPill, StatusPill } from '@/components/admin/StatusPill';
 import SendRemindersButton from '@/components/admin/SendRemindersButton';
 import ChannelTest from '@/components/admin/ChannelTest';
+import StorageTest from '@/components/admin/StorageTest';
 
 export const dynamic = 'force-dynamic';
 
@@ -264,6 +266,8 @@ export default async function AdminOverviewPage() {
           </div>
 
           <div className="mt-3 grid gap-3">
+            <StorageTest backend={storageBackend()} />
+
             <ChannelTest
               channel="sms"
               title="SMS test"

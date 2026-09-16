@@ -102,6 +102,7 @@ export default async function ServicesPage() {
                 <Reveal y={30}>
                   <Link href={'/services/' + category.slug} className="group block">
                     <Plate
+                      src={category.imageUrl}
                       alt={category.name}
                       theme={themeFor(category.slug)}
                       index={ci}

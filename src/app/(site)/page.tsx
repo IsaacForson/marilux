@@ -33,6 +33,7 @@ export default async function HomePage() {
       priceFrom: s.priceFrom,
       category: s.category,
       categorySlug: s.categorySlug,
+      imageUrl: s.imageUrl,
     }));
 
   return (
