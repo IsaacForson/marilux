@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { db, dbConfigured, queryOrNull } from '@/lib/store/db';
+import { invalidateRead, READ_KEYS, readThrough } from '@/lib/store/readCache';
 import type { PublicOffer } from './offers';
 
 /**
@@ -84,16 +85,19 @@ export const listPromotions = cache(async (): Promise<Promotion[]> => {
 /** Live automatic promotions — no code required, shown on the site. */
 export const activeAutoPromotions = cache(async (): Promise<Promotion[]> => {
   if (!dbConfigured()) return [];
-  const sql = db();
-  const rows = await queryOrNull(
-    'promotions',
-    () =>
-      sql<Row[]>`
-        select * from public.promotions
-        where is_active = true and code is null
-        order by created_at desc`,
-  );
-  return rows ? rows.map(toPromotion).filter((p) => isLive(p)) : [];
+
+  return readThrough(READ_KEYS.promotionsAuto, [] as Promotion[], async () => {
+    const sql = db();
+    const rows = await queryOrNull(
+      'promotions',
+      () =>
+        sql<Row[]>`
+          select * from public.promotions
+          where is_active = true and code is null
+          order by created_at desc`,
+    );
+    return rows ? rows.map(toPromotion).filter((p) => isLive(p)) : null;
+  });
 });
 
 /** Automatic offers the booking flow can apply as soon as a treatment is chosen. */
@@ -284,10 +288,12 @@ export async function upsertPromotion(input: {
         returning *`;
 
   if (!rows[0]) throw new Error('Promotion not found.');
+  invalidateRead(READ_KEYS.promotionsAuto);
   return toPromotion(rows[0]);
 }
 
 export async function deletePromotion(id: string) {
   const sql = db();
   await sql`delete from public.promotions where id = ${id}`;
+  invalidateRead(READ_KEYS.promotionsAuto);
 }

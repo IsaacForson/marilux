@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'react-icons', 'framer-motion'],
+    // Client navigations reuse the last RSC payload instead of waiting on
+    // Postgres again. Dynamic pages still refresh in the background.
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
   },
 };
 

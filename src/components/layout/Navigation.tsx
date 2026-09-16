@@ -115,6 +115,7 @@ export default function Navigation() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
+                        prefetch
                         aria-current={active ? 'page' : undefined}
                         className={cn(
                           'group relative block px-4 py-2 font-sans text-[0.66rem] uppercase tracking-luxe transition-colors duration-500',
@@ -237,6 +238,7 @@ function MobileMenu({
                       >
                         <Link
                           href={link.href}
+                          prefetch
                           onClick={onClose}
                           className="flex items-baseline justify-between py-4"
                         >

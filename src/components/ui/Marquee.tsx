@@ -29,9 +29,12 @@ export default function Marquee({
   );
 
   return (
-    <div className={cn('relative flex overflow-hidden', className)}>
+    <div className={cn('relative flex items-center overflow-hidden', className)}>
       <div
-        className={cn('flex w-max animate-marquee gpu', reverse && '[animation-direction:reverse]')}
+        className={cn(
+          'flex w-max items-center animate-marquee gpu',
+          reverse && '[animation-direction:reverse]',
+        )}
       >
         {half}
         {half}

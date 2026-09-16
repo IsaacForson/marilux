@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { isSignedIn } from '@/lib/admin/auth';
 import { db, dbConfigured } from '@/lib/store/db';
-import { getFullCatalogue } from '@/lib/catalogue';
+import { getFullCatalogue, invalidateCatalogue } from '@/lib/catalogue';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,6 +37,7 @@ const schema = z.object({
 });
 
 function revalidateCatalogue() {
+  invalidateCatalogue();
   revalidatePath('/');
   revalidatePath('/services');
   revalidatePath('/services/[slug]', 'page');

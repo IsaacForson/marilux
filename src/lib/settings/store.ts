@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { db, dbConfigured, queryOrNull } from '@/lib/store/db';
+import { invalidateRead, READ_KEYS, readThrough } from '@/lib/store/readCache';
 import {
   SETTINGS_DEFAULTS,
   type SettingsKey,
@@ -21,22 +22,23 @@ export const getAllSettings = cache(async function getAllSettings(): Promise<Set
   const fallback = structuredClone(SETTINGS_DEFAULTS);
   if (!dbConfigured()) return fallback;
 
-  const sql = db();
-  const rows = await queryOrNull(
-    'settings',
-    () => sql<Array<{ key: SettingsKey; value: unknown }>>`
-      select key, value from public.settings`,
-  );
+  return readThrough(READ_KEYS.settings, fallback, async () => {
+    const sql = db();
+    const rows = await queryOrNull(
+      'settings',
+      () => sql<Array<{ key: SettingsKey; value: unknown }>>`
+        select key, value from public.settings`,
+    );
+    if (!rows) return null;
 
-  if (!rows) return fallback;
-
-  const next = { ...fallback };
-  for (const row of rows) {
-    if (row.key in SETTINGS_DEFAULTS) {
-      next[row.key] = merge(fallback[row.key], row.value) as never;
+    const next = structuredClone(SETTINGS_DEFAULTS);
+    for (const row of rows) {
+      if (row.key in SETTINGS_DEFAULTS) {
+        next[row.key] = merge(next[row.key], row.value) as never;
+      }
     }
-  }
-  return next;
+    return next;
+  });
 });
 
 export const getSetting = cache(async function getSetting<K extends SettingsKey>(
@@ -66,6 +68,7 @@ export async function setSetting<K extends SettingsKey>(
     values (${key}, ${sql.json(next as never)})
     on conflict (key) do update set value = excluded.value`;
 
+  invalidateRead(READ_KEYS.settings);
   return next;
 }
 
@@ -73,6 +76,7 @@ export async function resetSetting(key: SettingsKey) {
   if (!dbConfigured()) return;
   const sql = db();
   await sql`delete from public.settings where key = ${key}`;
+  invalidateRead(READ_KEYS.settings);
 }
 
 /**

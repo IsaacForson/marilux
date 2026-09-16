@@ -75,8 +75,8 @@ export default function ContactPage() {
       />
 
       {/* Channels */}
-      <section className="shell pb-16" aria-label="Contact channels">
-        <div className="grid gap-4 sm:grid-cols-3">
+      <section className="shell flex items-center py-8 sm:py-10" aria-label="Contact channels">
+        <div className="grid w-full gap-4 sm:grid-cols-3">
           {CHANNELS.map((c, i) => (
             <Reveal key={c.label} y={26} delay={i * 0.07}>
               <a

@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { db, dbConfigured, queryOrNull } from '@/lib/store/db';
+import { invalidateRead, READ_KEYS, readThrough } from '@/lib/store/readCache';
 import {
   GALLERY,
   galleryBeforeSrc,
@@ -76,16 +77,23 @@ const toItem = (r: Row): LiveGalleryItem => {
 
 async function loadRows(includeHidden = false): Promise<Row[]> {
   if (!dbConfigured()) return [];
-  const sql = db();
-  const rows = await queryOrNull(
-    'gallery',
-    () =>
-      includeHidden
-        ? sql<Row[]>`select * from public.gallery_items order by sort_order, created_at desc`
-        : sql<Row[]>`select * from public.gallery_items
+  if (includeHidden) {
+    const sql = db();
+    const rows = await queryOrNull(
+      'gallery',
+      () => sql<Row[]>`select * from public.gallery_items order by sort_order, created_at desc`,
+    );
+    return rows ?? [];
+  }
+
+  return readThrough(READ_KEYS.gallery, [] as Row[], async () => {
+    const sql = db();
+    return queryOrNull(
+      'gallery',
+      () => sql<Row[]>`select * from public.gallery_items
                      where is_active order by sort_order, created_at desc`,
-  );
-  return rows ?? [];
+    );
+  });
 }
 
 /** What the public gallery renders. */
@@ -134,12 +142,14 @@ export async function upsertGalleryItem(input: {
            ${input.beforeUrl}, ${input.kind}, ${input.span}, ${input.sortOrder}, ${input.isActive})
         returning *`;
   if (!rows[0]) throw new Error('Gallery item not found.');
+  invalidateRead(READ_KEYS.gallery);
   return toItem(rows[0]);
 }
 
 export async function deleteGalleryItem(id: string) {
   const sql = db();
   await sql`delete from public.gallery_items where id = ${id}`;
+  invalidateRead(READ_KEYS.gallery);
 }
 
 /**
@@ -166,5 +176,6 @@ export async function seedGalleryFromDefaults() {
          ${beforeUrl}, ${item.kind ?? 'image'}, ${item.span}, ${order}, true)`;
     order += 1;
   }
+  invalidateRead(READ_KEYS.gallery);
   return { seeded: GALLERY.length };
 }

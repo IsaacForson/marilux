@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { db, dbConfigured, queryOrNull } from '@/lib/store/db';
+import { invalidateRead, READ_KEYS, readThrough } from '@/lib/store/readCache';
 import {
   SERVICE_CATEGORIES,
   type Service,
@@ -72,17 +73,22 @@ const EMPTY = { categories: [] as CategoryRow[], services: [] as ServiceRow[] };
 async function loadOverrides() {
   if (!dbConfigured()) return EMPTY;
 
-  const sql = db();
-  const rows = await queryOrNull('catalogue', () =>
-    Promise.all([
-      sql<CategoryRow[]>`select * from public.category_overrides`,
-      sql<ServiceRow[]>`select * from public.service_overrides`,
-    ]),
-  );
+  return readThrough(READ_KEYS.catalogue, EMPTY, async () => {
+    const sql = db();
+    const rows = await queryOrNull('catalogue', () =>
+      Promise.all([
+        sql<CategoryRow[]>`select * from public.category_overrides`,
+        sql<ServiceRow[]>`select * from public.service_overrides`,
+      ]),
+    );
+    if (!rows) return null;
+    const [categories, services] = rows;
+    return { categories, services };
+  });
+}
 
-  if (!rows) return EMPTY;
-  const [categories, services] = rows;
-  return { categories, services };
+export function invalidateCatalogue() {
+  invalidateRead(READ_KEYS.catalogue);
 }
 
 /** The full catalogue including anything the studio has hidden. Admin views. */

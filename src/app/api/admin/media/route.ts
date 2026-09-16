@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { isSignedIn } from '@/lib/admin/auth';
+import { invalidateRead, READ_KEYS } from '@/lib/store/readCache';
 import {
   ACCEPTED_TYPES,
   deleteMedia,
@@ -15,6 +16,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function revalidateSite() {
+  invalidateRead(READ_KEYS.catalogue, READ_KEYS.gallery);
   for (const path of ['/', '/services', '/gallery', '/about']) revalidatePath(path);
   revalidatePath('/services/[slug]', 'page');
 }

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { businessJsonLd } from '@/lib/seo';
 import { getSetting } from '@/lib/settings/store';
 import JsonLd from '@/components/seo/JsonLd';
@@ -12,17 +13,34 @@ import FloatingActions from '@/components/layout/FloatingActions';
 /**
  * Public site chrome.
  *
- * Kept in a route group so the admin dashboard can opt out of the marketing
- * navigation, the smooth-scroll rig, the intro curtain and the custom cursor —
- * none of which belong in a working tool.
+ * The banner is a streamed slot so a slow settings query cannot hold the rest
+ * of the page — or the next client navigation — hostage.
  */
-export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+export default function SiteLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <JsonLd data={businessJsonLd()} />
+      <Preloader />
+      <Cursor />
+      <SmoothScroll>
+        <Suspense fallback={null}>
+          <AnnouncementSlot />
+        </Suspense>
+        <Navigation />
+        <main id="main">{children}</main>
+        <Footer />
+        <FloatingActions />
+      </SmoothScroll>
+    </>
+  );
+}
+
+async function AnnouncementSlot() {
   const banner = await getSetting('banner');
   const showBanner = banner.enabled && banner.message.trim().length > 0;
 
   return (
     <>
-      <JsonLd data={businessJsonLd()} />
       {showBanner ? (
         <style
           dangerouslySetInnerHTML={{
@@ -30,15 +48,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           }}
         />
       ) : null}
-      <Preloader />
-      <Cursor />
-      <SmoothScroll>
-        <AnnouncementBanner banner={banner} />
-        <Navigation />
-        <main id="main">{children}</main>
-        <Footer />
-        <FloatingActions />
-      </SmoothScroll>
+      <AnnouncementBanner banner={banner} />
     </>
   );
 }
