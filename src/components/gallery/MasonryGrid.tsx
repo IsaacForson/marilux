@@ -45,7 +45,7 @@ export default function MasonryGrid({ items: source }: { items: GalleryItem[] })
         <div
           role="tablist"
           aria-label="Gallery categories"
-          className="no-scrollbar -mx-[var(--edge)] flex gap-2 overflow-x-auto px-[var(--edge)]"
+          className="no-scrollbar -mx-[var(--edge)] flex items-center gap-2 overflow-x-auto px-[var(--edge)]"
         >
           {GALLERY_FILTERS.map((f) => {
             const selected = filter === f.slug;
@@ -56,7 +56,7 @@ export default function MasonryGrid({ items: source }: { items: GalleryItem[] })
                 aria-selected={selected}
                 onClick={() => setFilter(f.slug)}
                 className={cn(
-                  'shrink-0 rounded-full border px-5 py-2.5 font-sans text-2xs uppercase tracking-luxe transition-all duration-500 ease-luxe',
+                  'inline-flex shrink-0 items-center rounded-full border px-5 py-2.5 font-sans text-2xs uppercase leading-none tracking-luxe transition-all duration-500 ease-luxe',
                   selected
                     ? 'border-accent bg-champagne text-onaccent'
                     : 'border-line text-ivory/50 hover:border-accent/50 hover:text-accent',

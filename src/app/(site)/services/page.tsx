@@ -60,21 +60,21 @@ export default async function ServicesPage() {
       />
 
       {/* Category index */}
-      <section className="shell pb-8">
-        <Reveal y={20} stagger={0.04}>
-          <div className="flex flex-wrap gap-2">
+      <nav aria-label="Jump to a category" className="shell flex min-h-28 items-center py-5">
+        <Reveal y={20} stagger={0.04} className="w-full">
+          <div className="flex flex-wrap content-center items-center gap-2">
             {SERVICE_CATEGORIES.map((c) => (
               <Link
                 key={c.slug}
                 href={'#' + c.slug}
-                className="rounded-full border border-line px-4 py-2.5 font-sans text-2xs uppercase tracking-luxe text-ivory/50 transition-all duration-500 ease-luxe hover:border-accent/50 hover:text-accent"
+                className="inline-flex items-center rounded-full border border-line px-4 py-2.5 font-sans text-2xs uppercase leading-none tracking-luxe text-ivory/50 transition-all duration-500 ease-luxe hover:border-accent/50 hover:text-accent"
               >
                 {c.name}
               </Link>
             ))}
           </div>
         </Reveal>
-      </section>
+      </nav>
 
       {/* Category sections */}
       {SERVICE_CATEGORIES.map((category, ci) => (
