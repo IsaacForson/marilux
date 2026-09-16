@@ -5,13 +5,10 @@ import { ArrowUpRight, Clock } from 'lucide-react';
 import { buildMetadata } from '@/lib/seo';
 import JsonLd from '@/components/seo/JsonLd';
 import { SITE } from '@/lib/data/site';
-import {
-  SERVICE_CATEGORIES,
-  formatDuration,
-  formatPrice,
-  getCategory,
-  depositFor,
-} from '@/lib/data/services';
+import { formatDuration, formatPrice } from '@/lib/data/services';
+import { SERVICE_CATEGORIES } from '@/lib/data/services';
+import { getCatalogue, getLiveCategory } from '@/lib/catalogue';
+import { getSetting } from '@/lib/settings/store';
 import { specialistsFor } from '@/lib/data/team';
 import { TESTIMONIALS } from '@/lib/data/testimonials';
 import { GHS } from '@/lib/utils';
@@ -34,7 +31,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const category = getCategory(slug);
+  const category = await getLiveCategory(slug);
   if (!category) return { title: 'Not found' };
 
   return buildMetadata({
@@ -47,12 +44,18 @@ export async function generateMetadata({
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const category = getCategory(slug);
+  const [category, all, bookingSettings] = await Promise.all([
+    getLiveCategory(slug),
+    getCatalogue(),
+    getSetting('booking'),
+  ]);
   if (!category) notFound();
 
+  const depositFor = (price: number) =>
+    Math.round((price * bookingSettings.depositPercent) / 100);
   const specialists = specialistsFor(category.slug);
   const stories = TESTIMONIALS.filter((t) => t.categorySlug === category.slug).slice(0, 2);
-  const others = SERVICE_CATEGORIES.filter((c) => c.slug !== category.slug).slice(0, 3);
+  const others = all.filter((c) => c.slug !== category.slug).slice(0, 3);
   const featured = category.services.filter((s) => s.featured).slice(0, 3);
   const accent = category.mood.accent;
 

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
-import { SERVICE_CATEGORIES } from '@/lib/data/services';
+import { getCatalogue } from '@/lib/catalogue';
 import { themeFor } from '@/lib/data/images';
 import Reveal from '@/components/ui/Reveal';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -13,7 +13,9 @@ import Plate from '@/components/ui/Plate';
  * into a three-column rhythm, so the grid reads as an editorial spread rather
  * than a directory listing.
  */
-export default function Rooms() {
+export default async function Rooms() {
+  const categories = await getCatalogue();
+
   return (
     <section className="relative py-24 sm:py-36" aria-labelledby="rooms-title">
       <div className="shell">
@@ -34,7 +36,7 @@ export default function Rooms() {
         </div>
 
         <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-          {SERVICE_CATEGORIES.map((cat, i) => {
+          {categories.map((cat, i) => {
             // First two run half-width, the remainder in thirds.
             const wide = i < 2;
             return (

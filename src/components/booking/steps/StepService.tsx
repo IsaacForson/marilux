@@ -1,13 +1,15 @@
 'use client';
 
-import { formatDuration, formatPrice, getCategory, depositFor } from '@/lib/data/services';
+import { formatDuration, formatPrice } from '@/lib/data/services';
 import { GHS } from '@/lib/utils';
 import { useBooking } from '../BookingContext';
 import OptionCard from '../OptionCard';
 
 export default function StepService() {
-  const { draft, set, next } = useBooking();
-  const category = draft.categorySlug ? getCategory(draft.categorySlug) : undefined;
+  const { draft, set, next, catalogue, depositPercent } = useBooking();
+  const category = draft.categorySlug
+    ? catalogue.find((c) => c.slug === draft.categorySlug)
+    : undefined;
 
   if (!category) {
     return <p className="text-ivory/50">Choose a category first.</p>;
@@ -50,7 +52,7 @@ export default function StepService() {
                   {formatPrice(s)}
                 </span>
                 <span className="mt-1 block whitespace-nowrap font-sans text-2xs uppercase tracking-luxe text-ivory/30">
-                  {GHS(depositFor(s.price))} deposit
+                  {GHS(Math.round((s.price * depositPercent) / 100))} deposit
                 </span>
               </span>
             }

@@ -3,6 +3,8 @@ import { SITE } from '@/lib/data/site';
 import { formatDuration } from '@/lib/data/services';
 import { formatTime, GHS } from '@/lib/utils';
 import { escapeHtml } from './format';
+import { render, tokensFor, wrapHtml } from './render';
+import type { MessageTemplate } from '@/lib/settings/types';
 
 export type MessageKind = 'received' | 'confirmed' | 'declined' | 'reminder' | 'cancelled';
 
@@ -287,3 +289,73 @@ export function smsSegments(text: string) {
   const multi = unicode ? 67 : 153;
   return text.length <= per ? 1 : Math.ceil(text.length / multi);
 }
+
+
+/* ------------------------------------------------------------------ */
+/* Studio-authored overrides                                           */
+/* ------------------------------------------------------------------ */
+
+export type RenderedMessage = {
+  subject: string;
+  text: string;
+  html: string;
+  sms: string;
+  /** False when the studio has switched this message off entirely. */
+  enabled: boolean;
+};
+
+/**
+ * Builds the message for one lifecycle event.
+ *
+ * A template field left empty means "use the copy we ship" — so a studio can
+ * rewrite only the SMS and keep our email, or vice versa, without having to
+ * rewrite everything to change one line.
+ */
+export function buildMessage(
+  kind: MessageKind,
+  b: BookingRecord,
+  template?: MessageTemplate,
+): RenderedMessage {
+  const tokens = tokensFor(b);
+
+  const subject = template?.emailSubject?.trim()
+    ? render(template.emailSubject, tokens)
+    : clientMessageSubject(kind, b);
+
+  const bodyOverride = template?.emailBody?.trim();
+  const text = bodyOverride ? render(bodyOverride, tokens) : clientMessageText(kind, b);
+  const html = bodyOverride
+    ? wrapHtml(text, COPY[kind].heading)
+    : clientMessageHtml(kind, b);
+
+  const smsOverride = template?.sms?.trim();
+  const sms = smsOverride ? gsm(render(smsOverride, tokens)) : clientSms(kind, b);
+
+  return { subject, text, html, sms, enabled: template?.enabled !== false };
+}
+
+/** Preview for the template editor, using a realistic sample booking. */
+export const SAMPLE_BOOKING: BookingRecord = {
+  reference: 'MLX-260918-KXVZC',
+  name: 'Ama Owusu',
+  email: 'ama@example.com',
+  phone: '0244123456',
+  whatsapp: '0244123456',
+  categorySlug: 'lashes',
+  categoryName: 'Lashes',
+  serviceSlug: 'volume-set',
+  serviceName: 'Volume Set',
+  specialistSlug: 'afia',
+  specialistName: 'Afia',
+  duration: 135,
+  date: '2026-09-18',
+  time: 570,
+  price: 550,
+  deposit: 275,
+  depositStatus: 'paid',
+  status: 'confirmed',
+  notes: 'First visit. Sensitive eyes.',
+  policiesAccepted: true,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};

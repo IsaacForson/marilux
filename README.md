@@ -32,7 +32,7 @@ look. Delete that file to start clean.
 npm run build && npm start   # production
 npm run typecheck            # tsc --noEmit
 npm run lint
-npm run db:migrate           # apply the Supabase schema
+npm run db:migrate           # apply the Supabase schema (idempotent)
 npm run db:import            # move any local JSON bookings into Postgres
 ```
 
@@ -225,6 +225,10 @@ rig, no intro curtain, no custom cursor.
 | **Bookings** | Every appointment, filtered by status and searchable by name, reference, email, phone or service. |
 | **Booking detail** | Full client record: contact details, the treatment, duration, specialist, **the client's own notes** (allergies, pregnancy, sensitivities), deposit state, message history, and every previous booking by that client. |
 | **Schedule** | Week view with opening hours, chair time, booked value, and each client's notes inline. |
+| **Prices** | Every treatment's price, duration and visibility, editable inline. Live on the website the moment you save. |
+| **Promos** | Automatic discounts and coupon codes — percentage or fixed, scoped to everything, a category or one treatment, with dates and usage limits. |
+| **Messages** | Rewrite any confirmation, reminder or decline in your own words, with a live preview and SMS segment count. |
+| **Settings** | Where bookings reach you, which channels are on, deposit percentage, booking window, and a site-wide announcement banner. |
 
 Actions: accept, decline, mark completed, no-show, cancel, reopen; set deposit state; send or
 resend a confirmation; send a reminder; leave a private studio note.
@@ -251,6 +255,49 @@ cron with a `x-cron-key` header matching `CRON_SECRET`:
 ```bash
 curl -X POST https://your-domain/api/admin/reminders -H "x-cron-key: $CRON_SECRET"
 ```
+
+## Studio-editable content
+
+Nothing about prices, messages or recipients requires a developer. It all lives in Supabase and
+is edited from `/admin`.
+
+### How the catalogue works
+
+`src/lib/data/services.ts` remains the source of **structure** and the default copy. Supabase
+holds **overrides** layered on at read time (`src/lib/catalogue/index.ts`). That has three
+consequences worth knowing:
+
+- An empty database renders exactly the catalogue we ship.
+- "Reset to default" is deleting a row, not restoring a backup.
+- A database outage degrades to the shipped prices rather than to an error — reads are wrapped
+  in a timeout so a slow database can never stall a page render or a build.
+
+Saving from the admin calls `revalidatePath`, so the statically generated pages pick up new
+prices immediately rather than waiting for a cache to expire.
+
+### Promotions
+
+Two flavours share one table. A **promotion** with no code applies automatically to everything in
+its scope; a **coupon** has a code the client types at checkout. Where both apply the client gets
+whichever is worth more — they never stack, which avoids a discount the studio did not intend.
+
+Every figure is recomputed server-side before a booking is accepted. A client that submits a
+made-up code is simply charged the full price; the browser is never trusted with a price.
+
+### Message templates
+
+Each lifecycle message (received, confirmed, reminder, declined, cancelled) has an editable email
+subject, email body and SMS. **A blank field falls back to the shipped copy** — so the studio can
+rewrite only the text message and keep our email. Templates use `{{token}}` placeholders, and the
+editor previews against a sample booking, flags unrecognised tokens, and counts SMS segments so
+the cost of a longer message is visible before it is saved.
+
+### Settings
+
+Owner email addresses and phone numbers are fields, not environment variables — a change of
+number is a thirty-second edit. Multiple recipients are supported, each channel can be switched
+off without removing credentials, and the deposit percentage, booking window and an announcement
+banner are all editable.
 
 ## Storage — Supabase
 

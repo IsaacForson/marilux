@@ -4,12 +4,8 @@ import { ArrowUpRight } from 'lucide-react';
 import { buildMetadata } from '@/lib/seo';
 import JsonLd from '@/components/seo/JsonLd';
 import { SITE } from '@/lib/data/site';
-import {
-  SERVICE_CATEGORIES,
-  TOTAL_SERVICE_COUNT,
-  formatDuration,
-  formatPrice,
-} from '@/lib/data/services';
+import { formatDuration, formatPrice } from '@/lib/data/services';
+import { getCatalogue } from '@/lib/catalogue';
 import PageHero from '@/components/sections/PageHero';
 import { themeFor } from '@/lib/data/images';
 import CtaBand from '@/components/sections/CtaBand';
@@ -25,7 +21,7 @@ export const metadata: Metadata = buildMetadata({
   keywords: ['beauty services Accra', 'salon price list Ghana', 'spa treatments Accra'],
 });
 
-function catalogueJsonLd() {
+function catalogueJsonLd(SERVICE_CATEGORIES: Awaited<ReturnType<typeof getCatalogue>>) {
   return {
     '@context': 'https://schema.org',
     '@type': 'OfferCatalog',
@@ -47,10 +43,13 @@ function catalogueJsonLd() {
   };
 }
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const SERVICE_CATEGORIES = await getCatalogue();
+  const TOTAL_SERVICE_COUNT = SERVICE_CATEGORIES.reduce((n, c) => n + c.services.length, 0);
+
   return (
     <>
-      <JsonLd data={catalogueJsonLd()} />
+      <JsonLd data={catalogueJsonLd(SERVICE_CATEGORIES)} />
 
       <PageHero
         eyebrow={TOTAL_SERVICE_COUNT + ' treatments · 10 disciplines'}

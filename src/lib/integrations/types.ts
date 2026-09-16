@@ -14,7 +14,7 @@ export type NotificationAdapter = {
   readonly id: string;
   /** False when the required environment variables are absent. */
   isConfigured(): boolean;
-  notifyOwner(booking: BookingRecord): Promise<DeliveryResult>;
+  notifyOwner(booking: BookingRecord, to?: string): Promise<DeliveryResult>;
   notifyCustomer(booking: BookingRecord): Promise<DeliveryResult>;
 };
 

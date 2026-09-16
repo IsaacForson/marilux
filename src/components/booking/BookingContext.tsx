@@ -8,9 +8,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { getCategory, getService, depositFor } from '@/lib/data/services';
 import { SPECIALISTS } from '@/lib/data/team';
 import type { BookingDraft } from '@/lib/booking/types';
+import type { ClientCategory, ClientService } from '@/lib/catalogue/shape';
 
 export const STEPS = [
   { id: 'category', label: 'Category', title: 'Where shall we begin?' },
@@ -36,12 +36,19 @@ type BookingContextValue = {
   next: () => void;
   back: () => void;
   canAdvance: boolean;
+  /** The live catalogue, with any price the studio has changed. */
+  catalogue: ClientCategory[];
+  /** Deposit percentage, as configured by the studio. */
+  depositPercent: number;
   resolved: {
-    category?: ReturnType<typeof getCategory>;
-    service?: ReturnType<typeof getService>;
+    category?: ClientCategory;
+    service?: ClientService;
     specialistName?: string;
     deposit: number;
   };
+  /** Set once a coupon has been validated by the server. */
+  discount: { code: string; label: string; amount: number } | null;
+  setDiscount: (d: { code: string; label: string; amount: number } | null) => void;
   errors: Record<string, string>;
   setErrors: (errors: Record<string, string>) => void;
 };
@@ -57,9 +64,13 @@ export function useBooking() {
 export function BookingProvider({
   children,
   initial,
+  catalogue,
+  depositPercent = 50,
 }: {
   children: ReactNode;
   initial?: BookingDraft;
+  catalogue: ClientCategory[];
+  depositPercent?: number;
 }) {
   const [draft, setDraft] = useState<BookingDraft>(initial ?? { specialistSlug: 'any' });
   const [step, setStep] = useState(() => firstIncompleteStep(initial));
@@ -78,6 +89,9 @@ export function BookingProvider({
       // A different service means a different duration, so the slot must go.
       if (patch.serviceSlug && patch.serviceSlug !== prev.serviceSlug) {
         nextDraft.time = undefined;
+        // A coupon validated against one treatment must not silently carry to
+        // another it may not apply to.
+        nextDraft.promoCode = undefined;
       }
       if (patch.specialistSlug && patch.specialistSlug !== prev.specialistSlug) {
         nextDraft.time = undefined;
@@ -90,23 +104,30 @@ export function BookingProvider({
     setErrors({});
   }, []);
 
+  const [discount, setDiscount] = useState<
+    { code: string; label: string; amount: number } | null
+  >(null);
+
   const resolved = useMemo(() => {
-    const category = draft.categorySlug ? getCategory(draft.categorySlug) : undefined;
-    const service =
-      draft.categorySlug && draft.serviceSlug
-        ? getService(draft.categorySlug, draft.serviceSlug)
-        : undefined;
+    const category = draft.categorySlug
+      ? catalogue.find((c) => c.slug === draft.categorySlug)
+      : undefined;
+    const service = draft.serviceSlug
+      ? category?.services.find((s) => s.slug === draft.serviceSlug)
+      : undefined;
     const specialistName =
       !draft.specialistSlug || draft.specialistSlug === 'any'
         ? 'First available'
         : SPECIALISTS.find((s) => s.slug === draft.specialistSlug)?.name;
+
+    const payable = service ? Math.max(0, service.price - (discount?.amount ?? 0)) : 0;
     return {
       category,
       service,
       specialistName,
-      deposit: service ? depositFor(service.price) : 0,
+      deposit: Math.round((payable * depositPercent) / 100),
     };
-  }, [draft.categorySlug, draft.serviceSlug, draft.specialistSlug]);
+  }, [draft.categorySlug, draft.serviceSlug, draft.specialistSlug, catalogue, discount, depositPercent]);
 
   const canAdvance = useMemo(() => isStepComplete(STEPS[step].id, draft), [step, draft]);
 
@@ -136,8 +157,26 @@ export function BookingProvider({
       resolved,
       errors,
       setErrors,
+      catalogue,
+      depositPercent,
+      discount,
+      setDiscount,
     }),
-    [draft, step, furthest, set, goTo, next, back, canAdvance, resolved, errors],
+    [
+      draft,
+      step,
+      furthest,
+      set,
+      goTo,
+      next,
+      back,
+      canAdvance,
+      resolved,
+      errors,
+      catalogue,
+      depositPercent,
+      discount,
+    ],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

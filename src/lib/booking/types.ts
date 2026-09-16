@@ -22,6 +22,8 @@ export const bookingSchema = z.object({
   policiesAccepted: z.literal(true, {
     errorMap: () => ({ message: 'Please accept the booking policy to continue' }),
   }),
+  /** Optional coupon typed at checkout. Validated server-side. */
+  promoCode: z.string().trim().max(40).optional().or(z.literal('')),
   /** Honeypot — must stay empty. */
   company: z.string().max(0).optional().or(z.literal('')),
 });
@@ -51,6 +53,9 @@ export type BookingRecord = BookingInput & {
   staffNote?: string;
   paymentProvider?: string;
   paymentReference?: string;
+  /** Price before any discount, present only when one was applied. */
+  originalPrice?: number;
+  discountAmount?: number;
 };
 
 export type DepositStatus = 'pending' | 'paid' | 'awaiting-link' | 'refunded' | 'failed';

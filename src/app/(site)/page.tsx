@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
 import { SITE } from '@/lib/data/site';
+import { getFeaturedServices } from '@/lib/catalogue';
 import Hero from '@/components/sections/Hero';
 import Philosophy from '@/components/sections/Philosophy';
 import SignatureServices from '@/components/sections/SignatureServices';
@@ -18,12 +19,27 @@ export const metadata: Metadata = buildMetadata({
   path: '/',
 });
 
-export default function HomePage() {
+export default async function HomePage() {
+  const featured = await getFeaturedServices();
+  const picks = featured
+    .filter((s) => s.categorySlug !== 'beauty-institute')
+    .slice(0, 10)
+    .map((s) => ({
+      slug: s.slug,
+      name: s.name,
+      description: s.description,
+      duration: s.duration,
+      price: s.price,
+      priceFrom: s.priceFrom,
+      category: s.category,
+      categorySlug: s.categorySlug,
+    }));
+
   return (
     <>
       <Hero />
       <Philosophy />
-      <SignatureServices />
+      <SignatureServices picks={picks} />
       <Rooms />
       <Experience />
       <Transformations />

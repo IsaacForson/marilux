@@ -12,6 +12,7 @@ const COLUMNS = `
   booking_time, price, deposit, deposit_status,
   payment_provider, payment_reference, status,
   notes, staff_note, policies_accepted,
+  promo_code, discount_amount, original_price,
   confirmation_sent_at, reminder_sent_at, created_at, updated_at
 `;
 
@@ -39,6 +40,9 @@ type Row = {
   notes: string | null;
   staff_note: string | null;
   policies_accepted: boolean;
+  promo_code: string | null;
+  discount_amount: number | null;
+  original_price: number | null;
   confirmation_sent_at: Date | null;
   reminder_sent_at: Date | null;
   created_at: Date;
@@ -71,6 +75,9 @@ function toRecord(row: Row): BookingRecord {
     status: row.status,
     notes: row.notes ?? undefined,
     staffNote: row.staff_note ?? undefined,
+    promoCode: row.promo_code ?? undefined,
+    discountAmount: row.discount_amount ?? 0,
+    originalPrice: row.original_price ?? undefined,
     policiesAccepted: true,
     confirmationSentAt: iso(row.confirmation_sent_at),
     reminderSentAt: iso(row.reminder_sent_at),
@@ -89,6 +96,8 @@ const PATCHABLE: Record<string, string> = {
   confirmationSentAt: 'confirmation_sent_at',
   reminderSentAt: 'reminder_sent_at',
   notes: 'notes',
+  promoCode: 'promo_code',
+  discountAmount: 'discount_amount',
 };
 
 export const postgresRepository: BookingRepository = {
@@ -117,7 +126,9 @@ export const postgresRepository: BookingRepository = {
         category_slug, category_name, service_slug, service_name,
         specialist_slug, specialist_name, duration_minutes,
         booking_date, booking_time, price, deposit, deposit_status,
-        status, notes, policies_accepted, created_at, updated_at
+        status, notes, policies_accepted,
+        promo_code, discount_amount, original_price,
+        created_at, updated_at
       ) values (
         ${record.reference}, ${record.name}, ${record.email},
         ${record.phone}, ${record.whatsapp},
@@ -127,6 +138,8 @@ export const postgresRepository: BookingRepository = {
         ${record.date}::date, ${record.time},
         ${record.price}, ${record.deposit}, ${record.depositStatus},
         ${record.status}, ${record.notes ?? null}, ${record.policiesAccepted},
+        ${record.promoCode ?? null}, ${record.discountAmount ?? 0},
+        ${record.originalPrice ?? null},
         ${record.createdAt}, ${record.updatedAt}
       )`;
     return record;

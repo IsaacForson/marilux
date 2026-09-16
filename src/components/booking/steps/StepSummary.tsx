@@ -6,9 +6,10 @@ import { formatDuration, formatPrice } from '@/lib/data/services';
 import { formatTime, GHS } from '@/lib/utils';
 import { useBooking } from '../BookingContext';
 import Accordion from '@/components/ui/Accordion';
+import PromoField from '../PromoField';
 
 export default function StepSummary() {
-  const { draft, set, goTo, resolved, errors } = useBooking();
+  const { draft, set, goTo, resolved, errors, discount } = useBooking();
   const { service, category } = resolved;
 
   const rows: Array<{ label: string; value: string; step: number }> = [
@@ -54,16 +55,45 @@ export default function StepSummary() {
         ))}
       </dl>
 
+      <PromoField />
+
       {/* Money */}
       <div className="mt-4 overflow-hidden rounded-2xl border border-accent/25 bg-accent/[0.05]">
         <div className="flex items-center justify-between px-5 py-4 sm:px-6">
           <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/50">
             Treatment total
           </span>
-          <span className="font-display text-xl text-ivory">
+          <span
+            className={
+              'font-display text-xl ' +
+              (discount ? 'text-ivory/40 line-through' : 'text-ivory')
+            }
+          >
             {service ? formatPrice(service) : '—'}
           </span>
         </div>
+
+        {discount && service && (
+          <div className="flex items-center justify-between border-t border-accent/20 px-5 py-4 sm:px-6">
+            <span className="font-sans text-2xs uppercase tracking-luxe text-success">
+              {discount.label}
+            </span>
+            <span className="font-display text-xl text-success">
+              − {GHS(discount.amount)}
+            </span>
+          </div>
+        )}
+
+        {discount && service && (
+          <div className="flex items-center justify-between border-t border-accent/20 px-5 py-4 sm:px-6">
+            <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/50">
+              New total
+            </span>
+            <span className="font-display text-xl text-ivory">
+              {GHS(Math.max(0, service.price - discount.amount))}
+            </span>
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-accent/20 px-5 py-4 sm:px-6">
           <span className="font-sans text-2xs uppercase tracking-luxe text-accent">
             Deposit due now (50%)
@@ -75,7 +105,12 @@ export default function StepSummary() {
             Balance, in studio
           </span>
           <span className="font-display text-lg text-ivory/70">
-            {GHS((service?.price ?? 0) - resolved.deposit)}
+            {GHS(
+              Math.max(
+                0,
+                (service?.price ?? 0) - (discount?.amount ?? 0) - resolved.deposit,
+              ),
+            )}
           </span>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { BEZIER } from '@/lib/motion';
 import type { BookingDraft } from '@/lib/booking/types';
+import type { ClientCategory } from '@/lib/catalogue/shape';
 import { BookingProvider, STEPS, useBooking } from './BookingContext';
 import ProgressRail from './ProgressRail';
 import SummaryPanel from './SummaryPanel';
@@ -19,9 +20,21 @@ import StepSummary from './steps/StepSummary';
 import StepPayment, { type SubmitOutcome } from './steps/StepPayment';
 import Confirmation from './Confirmation';
 
-export default function BookingFlow({ initial }: { initial?: BookingDraft }) {
+export default function BookingFlow({
+  initial,
+  catalogue,
+  depositPercent,
+}: {
+  initial?: BookingDraft;
+  catalogue: ClientCategory[];
+  depositPercent: number;
+}) {
   return (
-    <BookingProvider initial={initial}>
+    <BookingProvider
+      initial={initial}
+      catalogue={catalogue}
+      depositPercent={depositPercent}
+    >
       <FlowInner />
     </BookingProvider>
   );

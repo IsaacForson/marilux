@@ -1,17 +1,16 @@
 'use client';
 
-import { SERVICE_CATEGORIES } from '@/lib/data/services';
 import { useBooking } from '../BookingContext';
 import OptionCard from '../OptionCard';
 
 export default function StepCategory() {
-  const { draft, set, next } = useBooking();
+  const { draft, set, next, catalogue } = useBooking();
 
   return (
     <fieldset>
       <legend className="sr-only">Choose a service category</legend>
       <div className="grid gap-3 sm:grid-cols-2">
-        {SERVICE_CATEGORIES.map((c, i) => (
+        {catalogue.map((c, i) => (
           <OptionCard
             key={c.slug}
             name="category"

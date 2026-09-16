@@ -43,10 +43,10 @@ class GmailAdapter implements NotificationAdapter {
     );
   }
 
-  async notifyOwner(booking: BookingRecord): Promise<DeliveryResult> {
+  async notifyOwner(booking: BookingRecord, to?: string): Promise<DeliveryResult> {
     return this.send({
       target: 'owner',
-      to: process.env.OWNER_EMAIL || SITE.contact.email,
+      to: to || process.env.OWNER_EMAIL || SITE.contact.email,
       subject:
         'New booking · ' +
         booking.serviceName +

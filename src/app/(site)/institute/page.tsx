@@ -4,7 +4,8 @@ import { Award, BriefcaseBusiness, GraduationCap, Users2 } from 'lucide-react';
 import { buildMetadata } from '@/lib/seo';
 import JsonLd from '@/components/seo/JsonLd';
 import { SITE, whatsappLink } from '@/lib/data/site';
-import { getCategory, formatDuration, formatPrice, depositFor } from '@/lib/data/services';
+import { formatDuration, formatPrice, depositFor } from '@/lib/data/services';
+import { getLiveCategory } from '@/lib/catalogue';
 import { TESTIMONIALS } from '@/lib/data/testimonials';
 import { GHS } from '@/lib/utils';
 import PageHero from '@/components/sections/PageHero';
@@ -107,8 +108,8 @@ const ADMISSIONS = [
   },
 ];
 
-export default function InstitutePage() {
-  const institute = getCategory('beauty-institute');
+export default async function InstitutePage() {
+  const institute = await getLiveCategory('beauty-institute');
   const courses = institute?.services ?? [];
   const graduate = TESTIMONIALS.find((t) => t.categorySlug === 'beauty-institute');
 

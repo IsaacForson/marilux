@@ -3,14 +3,14 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Clock } from 'lucide-react';
-import { FEATURED_SERVICES, formatDuration, formatPrice } from '@/lib/data/services';
+import { formatDuration, formatPrice } from '@/lib/data/services';
 import Reveal from '@/components/ui/Reveal';
 import { themeFor } from '@/lib/data/images';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Plate from '@/components/ui/Plate';
 import { ButtonLink } from '@/components/ui/Button';
 
-const PICKS = FEATURED_SERVICES.filter((s) => s.categorySlug !== 'beauty-institute').slice(0, 10);
+
 
 /**
  * Most-requested treatments.
@@ -19,7 +19,18 @@ const PICKS = FEATURED_SERVICES.filter((s) => s.categorySlug !== 'beauty-institu
  * navigation and accessibility come free from the platform, and the scroll
  * runs on the compositor.
  */
-export default function SignatureServices() {
+export type SignaturePick = {
+  slug: string;
+  name: string;
+  description: string;
+  duration: number;
+  price: number;
+  priceFrom?: boolean;
+  category: string;
+  categorySlug: string;
+};
+
+export default function SignatureServices({ picks }: { picks: SignaturePick[] }) {
   const rail = useRef<HTMLUListElement>(null);
 
   const nudge = (dir: 1 | -1) => {
@@ -73,7 +84,7 @@ export default function SignatureServices() {
           className="no-scrollbar mt-14 flex snap-x snap-mandatory gap-4 overflow-x-auto px-[var(--edge)] pb-4"
           style={{ scrollPaddingInline: 'var(--edge)' }}
         >
-          {PICKS.map((service, i) => (
+          {picks.map((service, i) => (
             <li
               key={service.categorySlug + service.slug}
               className="w-[80vw] shrink-0 snap-start sm:w-[42vw] lg:w-[25vw] xl:w-[22rem]"

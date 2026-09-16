@@ -3,78 +3,51 @@ import type { BookingRecord } from '@/lib/booking/types';
 import { emailAdapter } from './email';
 import { deliverToClient, whatsappConfigured } from './whatsapp';
 import { sendSms, smsConfigured } from './sms';
-import {
-  clientMessageHtml,
-  clientMessageSubject,
-  clientMessageText,
-  clientSms,
-  clientStatusLine,
-  type MessageKind,
-} from './messages';
+import { buildMessage, clientStatusLine, type MessageKind } from './messages';
 import { sendMail, smtpConfigured } from './smtp';
 import { brevoConfigured, sendViaBrevo } from './brevo';
+import { getSetting } from '@/lib/settings/store';
 import type { DeliveryResult } from './types';
 
 /**
- * Send a lifecycle message to the client (confirmation, decline, reminder).
+ * Send a lifecycle message to the client.
  *
- * Kept separate from the booking-received fan-out because these are triggered
- * by the studio from the admin dashboard, and the studio needs to know
- * precisely whether each channel succeeded.
+ * Copy comes from the studio's own template when they have written one, and
+ * from the shipped defaults otherwise. Each channel can be switched off in
+ * settings without removing credentials.
  */
 export async function notifyClient(
   kind: MessageKind,
   booking: BookingRecord,
 ): Promise<DeliveryResult[]> {
-  const subject = clientMessageSubject(kind, booking);
-  const text = clientMessageText(kind, booking);
-  const html = clientMessageHtml(kind, booking);
+  const [prefs, templates] = await Promise.all([
+    getSetting('notifications'),
+    getSetting('templates'),
+  ]);
 
-  const email: Promise<DeliveryResult> = (async () => {
-    if (!emailAdapter.isConfigured()) {
-      return {
-        channel: 'email' as const,
-        target: 'customer' as const,
+  const template = kind in templates ? templates[kind as keyof typeof templates] : undefined;
+  const message = buildMessage(kind, booking, template);
+
+  if (!message.enabled) {
+    return [
+      {
+        channel: 'email',
+        target: 'customer',
         delivered: false,
-        detail: 'No email transport configured.',
-      };
-    }
-    if (brevoConfigured()) {
-      try {
-        await sendViaBrevo({ to: booking.email, subject, text, html });
-        return { channel: 'email' as const, target: 'customer' as const, delivered: true };
-      } catch (error) {
-        const detail = error instanceof Error ? error.message : 'Brevo send failed';
-        if (!smtpConfigured()) {
-          return { channel: 'email' as const, target: 'customer' as const, delivered: false, detail };
-        }
-        console.warn('[email] Brevo API failed, falling back to SMTP: ' + detail);
-      }
-    }
+        detail: 'This message is switched off in settings.',
+      },
+    ];
+  }
 
-    if (smtpConfigured()) {
-      try {
-        await sendMail({ to: booking.email, subject, text, html });
-        return { channel: 'email' as const, target: 'customer' as const, delivered: true };
-      } catch (error) {
-        return {
-          channel: 'email' as const,
-          target: 'customer' as const,
-          delivered: false,
-          detail: error instanceof Error ? error.message : 'SMTP send failed',
-        };
-      }
-    }
-    // Gmail API path reuses the adapter, which formats its own booking mail;
-    // for lifecycle messages we send through the same transport with our copy.
-    return emailAdapter.notifyCustomer({ ...booking });
-  })();
+  const jobs: Array<Promise<DeliveryResult>> = [];
 
-  const jobs: Array<Promise<DeliveryResult>> = [email];
+  if (prefs.emailEnabled && prefs.notifyClientEmail) {
+    jobs.push(sendClientEmail(booking, message));
+  }
 
-  if (smsConfigured()) {
+  if (prefs.smsEnabled && prefs.notifyClientSms && smsConfigured()) {
     jobs.push(
-      sendSms(booking.phone, clientSms(kind, booking)).then(
+      sendSms(booking.phone, message.sms).then(
         (r): DeliveryResult => ({
           channel: 'sms',
           target: 'customer',
@@ -85,12 +58,9 @@ export async function notifyClient(
     );
   }
 
-  // The WhatsApp message carries this kind's own copy — reusing the
-  // booking-received body here would tell a reminder recipient that their
-  // appointment had just been reserved.
-  if (whatsappConfigured()) {
+  if (prefs.whatsappEnabled && whatsappConfigured()) {
     jobs.push(
-      deliverToClient(booking, text, clientStatusLine(kind)).catch(
+      deliverToClient(booking, message.text, clientStatusLine(kind)).catch(
         (error): DeliveryResult => ({
           channel: 'whatsapp',
           target: 'customer',
@@ -101,5 +71,57 @@ export async function notifyClient(
     );
   }
 
+  if (jobs.length === 0) {
+    return [
+      {
+        channel: 'email',
+        target: 'customer',
+        delivered: false,
+        detail: 'Every client channel is switched off in settings.',
+      },
+    ];
+  }
+
   return Promise.all(jobs);
+}
+
+async function sendClientEmail(
+  booking: BookingRecord,
+  message: { subject: string; text: string; html: string },
+): Promise<DeliveryResult> {
+  const { subject, text, html } = message;
+
+  if (!emailAdapter.isConfigured()) {
+    return {
+      channel: 'email',
+      target: 'customer',
+      delivered: false,
+      detail: 'No email transport configured.',
+    };
+  }
+
+  if (brevoConfigured()) {
+    try {
+      await sendViaBrevo({ to: booking.email, subject, text, html });
+      return { channel: 'email', target: 'customer', delivered: true };
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'Brevo send failed';
+      if (!smtpConfigured()) {
+        return { channel: 'email', target: 'customer', delivered: false, detail };
+      }
+      console.warn('[email] Brevo API failed, falling back to SMTP: ' + detail);
+    }
+  }
+
+  try {
+    await sendMail({ to: booking.email, subject, text, html });
+    return { channel: 'email', target: 'customer', delivered: true };
+  } catch (error) {
+    return {
+      channel: 'email',
+      target: 'customer',
+      delivered: false,
+      detail: error instanceof Error ? error.message : 'SMTP send failed',
+    };
+  }
 }

@@ -4,58 +4,61 @@ import type { DeliveryResult } from './types';
 import { emailAdapter } from './email';
 import { whatsappAdapter } from './whatsapp';
 import { sendSms, smsConfigured } from './sms';
-import { clientSms, ownerSms } from './messages';
-import { SITE } from '@/lib/data/site';
+import { ownerSms } from './messages';
+import { getSetting } from '@/lib/settings/store';
+import { notifyClient } from './notifyClient';
 
 /**
- * Fan a new booking out to every configured channel.
+ * Fan a new booking out to every enabled channel.
  *
- * Deliveries run in parallel and never throw: a booking must still be recorded
- * and acknowledged even if a provider is down. The results tell the studio
- * precisely which channel needs a manual follow-up.
- *
- * Both parties get both an email and an SMS deliberately — if one is missed or
- * filtered, the other still lands.
+ * Recipients come from studio settings rather than environment variables, so
+ * a change of phone or a second manager is a field in the dashboard, not a
+ * redeploy. Deliveries run in parallel and never throw: a booking must still
+ * be recorded and acknowledged even if a provider is down.
  */
 export async function notifyAll(booking: BookingRecord): Promise<DeliveryResult[]> {
-  const jobs: Array<Promise<DeliveryResult>> = [
-    emailAdapter.notifyOwner(booking),
-    emailAdapter.notifyCustomer(booking),
-  ];
+  const prefs = await getSetting('notifications');
 
-  if (smsConfigured()) {
-    const ownerNumber = process.env.OWNER_SMS || process.env.OWNER_WHATSAPP || SITE.contact.phone;
-    jobs.push(
-      sendSms(ownerNumber, ownerSms(booking)).then((r) => ({
-        channel: 'sms' as const,
-        target: 'owner' as const,
-        delivered: r.ok,
-        detail: r.detail,
-      })),
-      sendSms(booking.phone, clientSms('received', booking)).then((r) => ({
-        channel: 'sms' as const,
-        target: 'customer' as const,
-        delivered: r.ok,
-        detail: r.detail,
-      })),
-    );
+  const jobs: Array<Promise<DeliveryResult>> = [];
+
+  // --- The studio ---
+  if (prefs.emailEnabled) {
+    for (const address of prefs.ownerEmails.filter(Boolean)) {
+      jobs.push(emailAdapter.notifyOwner(booking, address));
+    }
   }
 
-  // Only attempted when credentials exist, so a paused WhatsApp does not fill
-  // the studio's log with the same "not configured" line on every booking.
-  if (whatsappAdapter.isConfigured()) {
-    jobs.push(whatsappAdapter.notifyOwner(booking), whatsappAdapter.notifyCustomer(booking));
+  if (prefs.smsEnabled && smsConfigured()) {
+    for (const phone of prefs.ownerPhones.filter(Boolean)) {
+      jobs.push(
+        sendSms(phone, ownerSms(booking)).then(
+          (r): DeliveryResult => ({
+            channel: 'sms',
+            target: 'owner',
+            delivered: r.ok,
+            detail: r.detail,
+          }),
+        ),
+      );
+    }
   }
 
-  const settled = await Promise.allSettled(jobs);
-  return settled.map((r, i) =>
+  if (prefs.whatsappEnabled && whatsappAdapter.isConfigured()) {
+    jobs.push(whatsappAdapter.notifyOwner(booking));
+  }
+
+  const [ownerResults, clientResults] = await Promise.all([
+    Promise.allSettled(jobs),
+    // The client's acknowledgement goes through the same path as every other
+    // lifecycle message, so a studio-authored template applies here too.
+    notifyClient('received', booking).catch((): DeliveryResult[] => []),
+  ]);
+
+  const owner = ownerResults.map((r): DeliveryResult =>
     r.status === 'fulfilled'
       ? r.value
-      : {
-          channel: 'email',
-          target: i % 2 === 0 ? 'owner' : 'customer',
-          delivered: false,
-          detail: String(r.reason),
-        },
+      : { channel: 'email', target: 'owner', delivered: false, detail: String(r.reason) },
   );
+
+  return [...owner, ...clientResults];
 }

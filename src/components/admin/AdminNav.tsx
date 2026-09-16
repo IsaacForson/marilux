@@ -2,7 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { CalendarDays, LayoutDashboard, ListChecks, LogOut } from 'lucide-react';
+import {
+  CalendarDays,
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+  MessageSquareText,
+  Settings,
+  Tag,
+  Ticket,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import Wordmark from '@/components/layout/Wordmark';
@@ -11,6 +20,10 @@ const LINKS = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/admin/bookings', label: 'Bookings', icon: ListChecks },
   { href: '/admin/schedule', label: 'Schedule', icon: CalendarDays },
+  { href: '/admin/services', label: 'Prices', icon: Tag },
+  { href: '/admin/promotions', label: 'Promos', icon: Ticket },
+  { href: '/admin/messages', label: 'Messages', icon: MessageSquareText },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function AdminNav({ pending }: { pending: number }) {

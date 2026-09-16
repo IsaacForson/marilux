@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import { Clock, MessageCircle, ShieldCheck } from 'lucide-react';
 import { buildMetadata } from '@/lib/seo';
-import { getCategory, getService } from '@/lib/data/services';
+import { getCatalogue } from '@/lib/catalogue';
+import { toClientCatalogue } from '@/lib/catalogue/shape';
+import { getSetting } from '@/lib/settings/store';
 import { SITE, whatsappLink } from '@/lib/data/site';
 import type { BookingDraft } from '@/lib/booking/types';
 import BookingFlow from '@/components/booking/BookingFlow';
 import PageHero from '@/components/sections/PageHero';
+import { ButtonLink } from '@/components/ui/Button';
 import Reveal from '@/components/ui/Reveal';
 
 export const metadata: Metadata = buildMetadata({
@@ -33,9 +36,19 @@ export default async function BookingPage({
 }) {
   const params = await searchParams;
 
-  const category = params.category ? getCategory(params.category) : undefined;
+  const [categories, bookingSettings] = await Promise.all([
+    getCatalogue(),
+    getSetting('booking'),
+  ]);
+  const catalogue = toClientCatalogue(categories);
+
+  const category = params.category
+    ? catalogue.find((c) => c.slug === params.category)
+    : undefined;
   const service =
-    category && params.service ? getService(category.slug, params.service) : undefined;
+    category && params.service
+      ? category.services.find((s) => s.slug === params.service)
+      : undefined;
 
   const initial: BookingDraft = {
     categorySlug: category?.slug,
@@ -69,7 +82,27 @@ export default async function BookingPage({
       </PageHero>
 
       <section className="shell pb-28 pt-6 sm:pb-36">
-        <BookingFlow initial={initial} />
+        {bookingSettings.bookingOpen ? (
+          <BookingFlow
+            initial={initial}
+            catalogue={catalogue}
+            depositPercent={bookingSettings.depositPercent}
+          />
+        ) : (
+          <div className="glass rounded-[1.75rem] px-7 py-14 text-center sm:px-12">
+            <p className="eyebrow mb-5">Booking paused</p>
+            <p className="display-sm mx-auto max-w-[24ch]">{bookingSettings.closedMessage}</p>
+            <div className="mt-9">
+              <ButtonLink
+                href={whatsappLink('Hello Marilux, I would like to book an appointment.')}
+                size="lg"
+                arrow
+              >
+                Message us on WhatsApp
+              </ButtonLink>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="shell pb-28">

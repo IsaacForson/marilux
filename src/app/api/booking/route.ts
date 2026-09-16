@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { bookingSchema, makeReference, type BookingRecord } from '@/lib/booking/types';
-import { getCategory, getService, depositFor } from '@/lib/data/services';
+import { resolveServiceForBooking } from '@/lib/catalogue';
+import { calculateDiscount, redeemPromotion } from '@/lib/catalogue/promotions';
+import { getSetting } from '@/lib/settings/store';
 import { SPECIALISTS } from '@/lib/data/team';
 import { getAvailability, isPastSlot } from '@/lib/booking/availability';
 import { notifyAll } from '@/lib/integrations/notify';
@@ -60,12 +62,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, reference: makeReference() });
   }
 
-  const category = getCategory(input.categorySlug);
-  const service = getService(input.categorySlug, input.serviceSlug);
-  if (!category || !service) {
+  // Resolved from the live catalogue, which includes any price the studio has
+  // changed. Never from the request body — a client could otherwise name its
+  // own price.
+  const resolved = await resolveServiceForBooking(input.categorySlug, input.serviceSlug);
+  if (!resolved) {
     return NextResponse.json(
       { ok: false, error: 'That service is no longer available.' },
       { status: 422 },
+    );
+  }
+  const { category, service } = resolved;
+
+  const bookingSettings = await getSetting('booking');
+  if (!bookingSettings.bookingOpen) {
+    return NextResponse.json(
+      { ok: false, error: bookingSettings.closedMessage },
+      { status: 503 },
     );
   }
 
@@ -108,6 +121,19 @@ export async function POST(req: Request) {
     );
   }
 
+  // Discounts are recalculated here too. The figure the browser displayed is
+  // advisory; this one is what the client is actually charged.
+  const discount = await calculateDiscount({
+    categorySlug: category.slug,
+    serviceSlug: service.slug,
+    price: service.price,
+    code: input.promoCode,
+  });
+
+  const finalPrice = discount.finalPrice;
+  const depositPercent = bookingSettings.depositPercent;
+  const deposit = Math.round((finalPrice * depositPercent) / 100);
+
   const now = new Date().toISOString();
   const record: BookingRecord = {
     ...input,
@@ -116,8 +142,11 @@ export async function POST(req: Request) {
     categoryName: category.name,
     specialistName: specialist.name,
     duration: service.duration,
-    price: service.price,
-    deposit: depositFor(service.price),
+    price: finalPrice,
+    originalPrice: discount.amount > 0 ? service.price : undefined,
+    discountAmount: discount.amount,
+    promoCode: discount.promotion?.code ?? undefined,
+    deposit,
     depositStatus: 'pending',
     status: 'pending',
     createdAt: now,
@@ -134,6 +163,10 @@ export async function POST(req: Request) {
       { ok: false, error: 'We could not save that booking. Please try again.' },
       { status: 500 },
     );
+  }
+
+  if (discount.promotion) {
+    await redeemPromotion(discount.promotion.id, record.reference, discount.amount);
   }
 
   const deliveries = await notifyAll(record);
@@ -156,6 +189,10 @@ export async function POST(req: Request) {
     reference: record.reference,
     deposit: record.deposit,
     price: record.price,
+    originalPrice: record.originalPrice,
+    discount: record.discountAmount,
+    promoCode: record.promoCode,
+    promoLabel: discount.promotion?.label,
     // Channel status only, never the failure detail — that is for our logs.
     delivery: deliveries.map(({ channel, target, delivered }) => ({
       channel,
