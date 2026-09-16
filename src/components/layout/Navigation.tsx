@@ -82,8 +82,12 @@ export default function Navigation() {
 
       <header
         ref={bar}
-        className="fixed inset-x-0 top-0 z-[120] gpu"
-        style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+        className="fixed inset-x-0 z-[120] gpu"
+        style={{
+          top: 'var(--announcement-h, 0px)',
+          paddingTop:
+            'max(0.75rem, calc(env(safe-area-inset-top) - var(--announcement-h, 0px)))',
+        }}
       >
         <div className="shell">
           <div

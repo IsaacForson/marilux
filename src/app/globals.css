@@ -62,6 +62,7 @@
     --scroll-thumb-hover: #3b3532;
 
     --nav-h: 76px;
+    --announcement-h: 0px;
     --edge: clamp(1.25rem, 5vw, 5.5rem);
   }
 

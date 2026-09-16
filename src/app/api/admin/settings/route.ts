@@ -15,12 +15,9 @@ const schema = z.object({
   value: z.record(z.unknown()),
 });
 
-/** Every public page that renders settings-derived content. */
+/** The banner lives in the public layout, so a layout revalidation covers every page. */
 function revalidateSite() {
-  for (const path of ['/', '/services', '/booking', '/contact', '/institute']) {
-    revalidatePath(path);
-  }
-  revalidatePath('/services/[slug]', 'page');
+  revalidatePath('/', 'layout');
 }
 
 export async function GET(req: Request) {
