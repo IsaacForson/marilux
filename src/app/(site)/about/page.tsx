@@ -12,6 +12,7 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import SplitHeading from '@/components/ui/SplitHeading';
 import Counter from '@/components/ui/Counter';
 import Plate from '@/components/ui/Plate';
+import MediaCard from '@/components/ui/MediaCard';
 import Aura from '@/components/ui/Aura';
 
 export const metadata: Metadata = buildMetadata({
@@ -93,14 +94,14 @@ export default function AboutPage() {
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="shadow-[0_60px_140px_-60px_rgba(0,0,0,0.95)]"
             />
-            <div className="glass absolute -bottom-7 left-6 right-6 rounded-2xl p-6 sm:left-auto sm:right-[-2rem] sm:max-w-[17rem]">
+            <MediaCard className="absolute -bottom-7 left-6 right-6 p-6 sm:left-auto sm:right-[-2rem] sm:max-w-[17rem]">
               <p className="font-display text-lg leading-snug text-ivory">
                 &ldquo;We would rather lose a booking than your trust.&rdquo;
               </p>
-              <p className="mt-3 font-sans text-2xs uppercase tracking-luxe text-accent/70">
+              <p className="mt-3 font-sans text-2xs uppercase tracking-luxe text-accent">
                 Mariam — Founder
               </p>
-            </div>
+            </MediaCard>
           </Reveal>
 
           <div className="pt-10 lg:pt-0">

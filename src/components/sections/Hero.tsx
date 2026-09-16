@@ -10,6 +10,7 @@ import { scrollTo } from '@/components/providers/SmoothScroll';
 import SplitHeading from '@/components/ui/SplitHeading';
 import { ButtonLink } from '@/components/ui/Button';
 import Plate from '@/components/ui/Plate';
+import MediaCard from '@/components/ui/MediaCard';
 import Aura from '@/components/ui/Aura';
 
 const MARKS = [
@@ -173,13 +174,9 @@ export default function Hero() {
             />
           </div>
 
-          {/* This card floats over photography whose brightness we do not
-              control, so it carries its own dark backing rather than relying on
-              `glass` — over a pale image the translucent version left the quote
-              unreadable. `on-media` pins the type light in both themes. */}
-          <div
+          <MediaCard
             data-hero-plate="tag"
-            className="on-media absolute bottom-[22%] right-[2%] max-w-[13rem] rounded-2xl border border-white/12 bg-[#0B0A09]/85 p-5 shadow-[0_20px_60px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+            className="absolute bottom-[22%] right-[2%] max-w-[13rem]"
           >
             <p className="font-display text-lg leading-snug text-ivory">
               &ldquo;They measured my face for twenty minutes before they touched me.&rdquo;
@@ -187,7 +184,7 @@ export default function Hero() {
             <p className="mt-3 font-sans text-2xs uppercase tracking-luxe text-accent">
               Adwoa M. — East Legon
             </p>
-          </div>
+          </MediaCard>
         </div>
       </div>
 

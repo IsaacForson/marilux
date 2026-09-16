@@ -4,6 +4,7 @@ import Reveal from '@/components/ui/Reveal';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Counter from '@/components/ui/Counter';
 import Plate from '@/components/ui/Plate';
+import MediaCard from '@/components/ui/MediaCard';
 import Aura from '@/components/ui/Aura';
 
 const PILLARS = [
@@ -49,12 +50,12 @@ export default function Experience() {
               sizes="(max-width: 1024px) 100vw, 45vw"
               className="shadow-[0_60px_140px_-60px_rgba(0,0,0,0.95)]"
             />
-            <div className="glass absolute -bottom-6 -right-4 max-w-[15rem] rounded-2xl p-6 sm:-right-8">
+            <MediaCard className="absolute -bottom-6 -right-4 max-w-[15rem] p-6 sm:-right-8">
               <p className="font-display text-4xl font-light text-accent">98%</p>
-              <p className="mt-2 text-sm leading-relaxed text-ivory/60">
+              <p className="mt-2 text-sm leading-relaxed text-ivory/75">
                 of our guests book their next appointment before they leave.
               </p>
-            </div>
+            </MediaCard>
           </Reveal>
 
           {/* Copy column */}
