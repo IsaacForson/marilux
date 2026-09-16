@@ -76,10 +76,16 @@ async function loadOverrides() {
 
   try {
     const sql = db();
+    // Capture rather than race away a rejection: a Promise.race that only sees
+    // the timeout hides the actual database error, which is exactly the
+    // information needed when a read stops working.
     const read = Promise.all([
       sql<CategoryRow[]>`select * from public.category_overrides`,
       sql<ServiceRow[]>`select * from public.service_overrides`,
-    ]);
+    ]).then(
+      (rows) => ({ rows, error: null as unknown }),
+      (error: unknown) => ({ rows: null, error }),
+    );
 
     const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
     const result = await Promise.race([read, timeout]);
@@ -90,8 +96,12 @@ async function loadOverrides() {
       );
       return EMPTY;
     }
+    if (result.error || !result.rows) {
+      console.error('[catalogue] override read failed:', result.error);
+      return EMPTY;
+    }
 
-    const [categories, services] = result;
+    const [categories, services] = result.rows;
     return { categories, services };
   } catch (error) {
     console.error('[catalogue] override read failed, using shipped prices:', error);

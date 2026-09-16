@@ -9,20 +9,30 @@ const inputClass =
 
 export function Label({
   children,
-  hint,
   htmlFor,
 }: {
   children: React.ReactNode;
-  hint?: string;
   htmlFor?: string;
 }) {
   return (
-    <div className="mb-2">
-      <label htmlFor={htmlFor} className="eyebrow block">
-        {children}
-      </label>
-      {hint && <p className="mt-1.5 text-xs leading-relaxed text-ivory/35">{hint}</p>}
-    </div>
+    <label htmlFor={htmlFor} className="eyebrow mb-2 block">
+      {children}
+    </label>
+  );
+}
+
+/**
+ * Helper text, rendered *below* its field.
+ *
+ * Above the input it reads as part of the label and pushes the control away
+ * from its own name; below, it reads as guidance about what you just typed.
+ */
+function Hint({ id, children }: { id?: string; children?: React.ReactNode }) {
+  if (!children) return null;
+  return (
+    <p id={id} className="mt-2 text-xs leading-relaxed text-ivory/35">
+      {children}
+    </p>
   );
 }
 
@@ -33,14 +43,12 @@ export function TextInput({
   ...props
 }: { label?: string; hint?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   const id = useId();
+  const hintId = hint ? id + '-hint' : undefined;
   return (
     <div className={className}>
-      {label && (
-        <Label htmlFor={id} hint={hint}>
-          {label}
-        </Label>
-      )}
-      <input id={id} {...props} className={inputClass} />
+      {label && <Label htmlFor={id}>{label}</Label>}
+      <input id={id} aria-describedby={hintId} {...props} className={inputClass} />
+      <Hint id={hintId}>{hint}</Hint>
     </div>
   );
 }
@@ -52,14 +60,17 @@ export function TextArea({
   ...props
 }: { label?: string; hint?: string } & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const id = useId();
+  const hintId = hint ? id + '-hint' : undefined;
   return (
     <div className={className}>
-      {label && (
-        <Label htmlFor={id} hint={hint}>
-          {label}
-        </Label>
-      )}
-      <textarea id={id} {...props} className={cn(inputClass, 'resize-y leading-relaxed')} />
+      {label && <Label htmlFor={id}>{label}</Label>}
+      <textarea
+        id={id}
+        aria-describedby={hintId}
+        {...props}
+        className={cn(inputClass, 'resize-y leading-relaxed')}
+      />
+      <Hint id={hintId}>{hint}</Hint>
     </div>
   );
 }
@@ -72,16 +83,19 @@ export function Select({
   ...props
 }: { label?: string; hint?: string } & React.SelectHTMLAttributes<HTMLSelectElement>) {
   const id = useId();
+  const hintId = hint ? id + '-hint' : undefined;
   return (
     <div className={className}>
-      {label && (
-        <Label htmlFor={id} hint={hint}>
-          {label}
-        </Label>
-      )}
-      <select id={id} {...props} className={cn(inputClass, 'appearance-none bg-ink-800')}>
+      {label && <Label htmlFor={id}>{label}</Label>}
+      <select
+        id={id}
+        aria-describedby={hintId}
+        {...props}
+        className={cn(inputClass, 'appearance-none bg-ink-800')}
+      >
         {children}
       </select>
+      <Hint id={hintId}>{hint}</Hint>
     </div>
   );
 }
@@ -170,7 +184,7 @@ export function ListInput({
 
   return (
     <div>
-      <Label hint={hint}>{label}</Label>
+      <Label>{label}</Label>
       <div className="space-y-2">
         {rows.map((value, i) => (
           <div key={i} className="flex gap-2">
@@ -195,6 +209,8 @@ export function ListInput({
           </div>
         ))}
       </div>
+
+      <Hint>{hint}</Hint>
 
       {rows.length < max && (
         <button

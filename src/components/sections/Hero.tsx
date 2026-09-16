@@ -173,14 +173,18 @@ export default function Hero() {
             />
           </div>
 
+          {/* This card floats over photography whose brightness we do not
+              control, so it carries its own dark backing rather than relying on
+              `glass` — over a pale image the translucent version left the quote
+              unreadable. `on-media` pins the type light in both themes. */}
           <div
             data-hero-plate="tag"
-            className="glass absolute bottom-[22%] right-[2%] max-w-[13rem] rounded-2xl p-5"
+            className="on-media absolute bottom-[22%] right-[2%] max-w-[13rem] rounded-2xl border border-white/12 bg-[#0B0A09]/85 p-5 shadow-[0_20px_60px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl"
           >
             <p className="font-display text-lg leading-snug text-ivory">
               &ldquo;They measured my face for twenty minutes before they touched me.&rdquo;
             </p>
-            <p className="mt-3 font-sans text-2xs uppercase tracking-luxe text-accent/70">
+            <p className="mt-3 font-sans text-2xs uppercase tracking-luxe text-accent">
               Adwoa M. — East Legon
             </p>
           </div>
