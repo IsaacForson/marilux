@@ -50,7 +50,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GH" className={display.variable + ' ' + sans.variable} suppressHydrationWarning>
+    <html
+      lang="en-GH"
+      data-theme="dark"
+      className={display.variable + ' ' + sans.variable}
+      suppressHydrationWarning
+    >
       <head>
         {/* Sets data-theme before first paint so there is no flash of the
             wrong palette. Static string, no user input. */}

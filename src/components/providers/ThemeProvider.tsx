@@ -38,7 +38,7 @@ export function useTheme() {
  */
 export const themeInitScript = `(function(){try{
 var s=localStorage.getItem('${STORAGE_KEY}');
-var t=s==='light'||s==='dark'?s:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+var t=s==='light'||s==='dark'?s:'dark';
 document.documentElement.setAttribute('data-theme',t);
 }catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
 
