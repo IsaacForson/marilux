@@ -10,6 +10,7 @@ import postgres from 'postgres';
  */
 declare global {
   var __mariluxSql: ReturnType<typeof postgres> | undefined;
+  var __mariluxSqlVersion: string | undefined;
 }
 
 export function dbConfigured() {
@@ -33,11 +34,18 @@ function connectionUrl() {
 
 const isBuild = () => process.env.NEXT_PHASE === 'phase-production-build';
 
+/** Bump when the postgres client options or package version change, so HMR replaces the pool. */
+const POOL_VERSION = '3.4.9';
+
 export function db() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is not set');
 
-  if (!globalThis.__mariluxSql) {
+  if (!globalThis.__mariluxSql || globalThis.__mariluxSqlVersion !== POOL_VERSION) {
+    if (globalThis.__mariluxSql) {
+      void globalThis.__mariluxSql.end({ timeout: 0 });
+    }
+    globalThis.__mariluxSqlVersion = POOL_VERSION;
     globalThis.__mariluxSql = postgres(connectionUrl(), {
       ssl: 'require',
       // Supabase's transaction pooler (port 6543) multiplexes connections and
@@ -56,7 +64,8 @@ export function db() {
 }
 
 function timeoutMs() {
-  return Number(process.env.CATALOGUE_TIMEOUT_MS || 8000);
+  const ms = Number(process.env.CATALOGUE_TIMEOUT_MS || 8000);
+  return Number.isFinite(ms) && ms > 0 ? ms : 8000;
 }
 
 function describeError(error: unknown) {
@@ -71,13 +80,20 @@ function describeError(error: unknown) {
  * unhandled Postgres error for Next.js to paint as a red overlay. Callers
  * treat `null` as "use the fallback".
  */
+type Cancellable<T> = Promise<T> & { cancel?: () => void };
+
 export async function queryOrNull<T>(
   label: string,
   run: () => Promise<T>,
 ): Promise<T | null> {
   const ms = timeoutMs();
+  let query: Cancellable<T> | undefined;
+
   const captured = Promise.resolve()
-    .then(run)
+    .then(() => {
+      query = run() as Cancellable<T>;
+      return query;
+    })
     .then(
       (value) => ({ status: 'ok' as const, value }),
       (error: unknown) => ({ status: 'error' as const, error }),
@@ -91,6 +107,11 @@ export async function queryOrNull<T>(
   try {
     const result = await Promise.race([captured, timedOut]);
     if (result.status === 'timeout') {
+      try {
+        query?.cancel?.();
+      } catch {
+        /* best-effort: the connection is returned to the pool either way */
+      }
       console.warn('[' + label + '] timed out after ' + ms + 'ms');
       return null;
     }

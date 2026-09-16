@@ -1,5 +1,5 @@
 import 'server-only';
-import { db, dbConfigured } from '@/lib/store/db';
+import { db, dbConfigured, queryOrNull } from '@/lib/store/db';
 
 /**
  * Discounts, promotions and coupon codes.
@@ -69,15 +69,14 @@ const toPromotion = (r: Row): Promotion => ({
 
 export async function listPromotions(): Promise<Promotion[]> {
   if (!dbConfigured()) return [];
-  try {
-    const sql = db();
-    const rows = await sql<Row[]>`
-      select * from public.promotions order by is_active desc, created_at desc`;
-    return rows.map(toPromotion);
-  } catch (error) {
-    console.error('[promotions] list failed:', error);
-    return [];
-  }
+  const sql = db();
+  const rows = await queryOrNull(
+    'promotions',
+    () =>
+      sql<Row[]>`
+        select * from public.promotions order by is_active desc, created_at desc`,
+  );
+  return rows ? rows.map(toPromotion) : [];
 }
 
 /** Live automatic promotions — no code required, shown on the site. */

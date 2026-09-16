@@ -1,7 +1,7 @@
 import { requireAdmin } from '@/lib/admin/auth';
 import { listPromotions } from '@/lib/catalogue/promotions';
 import { getFullCatalogue } from '@/lib/catalogue';
-import { bookings, statusCount, usingDatabase } from '@/lib/store/bookings';
+import { pendingCount, usingDatabase } from '@/lib/store/bookings';
 import AdminNav from '@/components/admin/AdminNav';
 import PromotionsEditor from '@/components/admin/PromotionsEditor';
 
@@ -10,15 +10,15 @@ export const dynamic = 'force-dynamic';
 export default async function AdminPromotionsPage() {
   await requireAdmin();
 
-  const [promotions, categories, all] = await Promise.all([
+  const [promotions, categories, pending] = await Promise.all([
     listPromotions(),
     getFullCatalogue(),
-    bookings.all(),
+    pendingCount(),
   ]);
 
   return (
     <>
-      <AdminNav pending={statusCount(all, 'pending')} />
+      <AdminNav pending={pending} />
 
       <main className="mx-auto max-w-4xl px-[var(--edge)] py-10">
         <p className="eyebrow mb-3">Promotions</p>

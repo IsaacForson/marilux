@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { BookingRecord, BookingStatus } from '@/lib/booking/types';
 import type { BookingRepository } from './types';
-import { dbConfigured } from './db';
+import { db, dbConfigured, queryOrNull } from './db';
 import { postgresRepository } from './postgresRepository';
 
 export type { BookingRepository } from './types';
@@ -176,4 +176,17 @@ export const byStatus = (records: BookingRecord[]) =>
 
 export function statusCount(records: BookingRecord[], status: BookingStatus) {
   return records.filter((r) => r.status === status).length;
+}
+
+/** Badge count for the admin nav — one COUNT, not the whole bookings table. */
+export async function pendingCount(): Promise<number> {
+  if (!usingDatabase) return statusCount(await bookings.all(), 'pending');
+  const sql = db();
+  const rows = await queryOrNull(
+    'pending-count',
+    () =>
+      sql<Array<{ n: number }>>`
+        select count(*)::int as n from public.bookings where status = 'pending'`,
+  );
+  return rows?.[0]?.n ?? 0;
 }
