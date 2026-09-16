@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Check, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import Field from '@/components/booking/Field';
+import PasswordInput from './PasswordInput';
 import Wordmark from '@/components/layout/Wordmark';
 
 export default function ResetForm({ token }: { token: string }) {
@@ -95,36 +95,30 @@ export default function ResetForm({ token }: { token: string }) {
       </p>
 
       <div className="mt-8 space-y-5">
-        <Field label="New password" required hint="At least 10 characters.">
-          {(props) => (
-            <input
-              {...props}
-              type="password"
-              autoComplete="new-password"
-              autoFocus
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError(null);
-              }}
-            />
-          )}
-        </Field>
+        <PasswordInput
+          label="New password"
+          required
+          hint="At least 10 characters."
+          autoComplete="new-password"
+          autoFocus
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setError(null);
+          }}
+        />
 
-        <Field label="Confirm password" required error={error ?? undefined}>
-          {(props) => (
-            <input
-              {...props}
-              type="password"
-              autoComplete="new-password"
-              value={confirm}
-              onChange={(e) => {
-                setConfirm(e.target.value);
-                setError(null);
-              }}
-            />
-          )}
-        </Field>
+        <PasswordInput
+          label="Confirm password"
+          required
+          error={error ?? undefined}
+          autoComplete="new-password"
+          value={confirm}
+          onChange={(e) => {
+            setConfirm(e.target.value);
+            setError(null);
+          }}
+        />
       </div>
 
       <Button type="submit" size="lg" className="mt-6 w-full" disabled={busy} aria-busy={busy}>

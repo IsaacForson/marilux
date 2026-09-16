@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import Field from '@/components/booking/Field';
+import PasswordInput from './PasswordInput';
 import Wordmark from '@/components/layout/Wordmark';
 
 type Mode = 'signin' | 'forgot' | 'sent';
@@ -144,22 +145,19 @@ export default function LoginForm() {
         )}
 
         {!forgot && (
-          <Field label="Password" required error={error ?? undefined}>
-            {(props) => (
-              <input
-                {...props}
-                type="password"
-                autoComplete="current-password"
-                autoFocus={hasAccounts === false}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError(null);
-                }}
-                placeholder="••••••••••"
-              />
-            )}
-          </Field>
+          <PasswordInput
+            label="Password"
+            required
+            error={error ?? undefined}
+            autoComplete="current-password"
+            autoFocus={hasAccounts === false}
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError(null);
+            }}
+            placeholder="••••••••••"
+          />
         )}
       </div>
 

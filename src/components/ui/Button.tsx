@@ -43,7 +43,10 @@ function Inner({ children, arrow }: { children: ReactNode; arrow?: boolean }) {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-[900ms] ease-luxe group-hover:translate-x-full"
       />
-      <span className="relative z-10">{children}</span>
+      {/* Tailwind's preflight makes every `svg` display:block, so an icon and
+          its label inside one inline span stack vertically. Laying the content
+          out as a flex row is what keeps them on the same line. */}
+      <span className="relative z-10 inline-flex items-center gap-2.5">{children}</span>
       {arrow && (
         <ArrowUpRight
           className="relative z-10 h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-0.5 group-hover:-translate-y-0.5"

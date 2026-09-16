@@ -6,6 +6,7 @@ import { KeyRound, Loader2, Plus, ShieldCheck, Trash2, UserPlus } from 'lucide-r
 import type { AdminUser } from '@/lib/admin/users';
 import { cn } from '@/lib/utils';
 import { Panel, Select, TextInput, Toggle } from './Form';
+import PasswordInput from './PasswordInput';
 
 export default function TeamEditor({
   users,
@@ -162,9 +163,9 @@ export default function TeamEditor({
               value={draft.email}
               onChange={(e) => setDraft({ ...draft, email: e.target.value })}
             />
-            <TextInput
+            <PasswordInput
               label="Password"
-              type="text"
+              autoComplete="new-password"
               hint="At least 10 characters. They can change it once signed in."
               value={draft.password}
               onChange={(e) => setDraft({ ...draft, password: e.target.value })}

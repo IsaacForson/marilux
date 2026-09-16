@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Check, Loader2, Lock } from 'lucide-react';
-import { Panel, TextInput } from './Form';
+import { Panel } from './Form';
+import PasswordInput from './PasswordInput';
 
 /** Change your own password. Requires the current one, as it should. */
 export default function ChangePassword() {
@@ -45,9 +46,8 @@ export default function ChangePassword() {
       description="Changing this signs you out of every other device, but keeps you signed in here."
     >
       <div className="grid gap-6 sm:grid-cols-3">
-        <TextInput
+        <PasswordInput
           label="Current password"
-          type="password"
           autoComplete="current-password"
           value={current}
           onChange={(e) => {
@@ -56,9 +56,8 @@ export default function ChangePassword() {
             setDone(false);
           }}
         />
-        <TextInput
+        <PasswordInput
           label="New password"
-          type="password"
           autoComplete="new-password"
           hint="At least 10 characters."
           value={next}
@@ -68,9 +67,8 @@ export default function ChangePassword() {
             setDone(false);
           }}
         />
-        <TextInput
+        <PasswordInput
           label="Confirm new password"
-          type="password"
           autoComplete="new-password"
           value={confirm}
           onChange={(e) => {
