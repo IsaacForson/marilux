@@ -9,7 +9,7 @@ import Accordion from '@/components/ui/Accordion';
 import PromoField from '../PromoField';
 
 export default function StepSummary() {
-  const { draft, set, goTo, resolved, errors, discount } = useBooking();
+  const { draft, set, goTo, resolved, errors, discount, depositPercent } = useBooking();
   const { service, category } = resolved;
 
   const rows: Array<{ label: string; value: string; step: number }> = [
@@ -89,14 +89,13 @@ export default function StepSummary() {
             <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/50">
               New total
             </span>
-            <span className="font-display text-xl text-ivory">
-              {GHS(Math.max(0, service.price - discount.amount))}
-            </span>
+            <span className="font-display text-xl text-ivory">{GHS(resolved.total)}</span>
           </div>
         )}
         <div className="flex items-center justify-between border-t border-accent/20 px-5 py-4 sm:px-6">
           <span className="font-sans text-2xs uppercase tracking-luxe text-accent">
-            Deposit due now (50%)
+            Deposit due now ({depositPercent}%
+            {discount ? ' of new total' : ''})
           </span>
           <span className="font-display text-2xl text-accent">{GHS(resolved.deposit)}</span>
         </div>
@@ -104,14 +103,7 @@ export default function StepSummary() {
           <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/40">
             Balance, in studio
           </span>
-          <span className="font-display text-lg text-ivory/70">
-            {GHS(
-              Math.max(
-                0,
-                (service?.price ?? 0) - (discount?.amount ?? 0) - resolved.deposit,
-              ),
-            )}
-          </span>
+          <span className="font-display text-lg text-ivory/70">{GHS(resolved.balance)}</span>
         </div>
       </div>
 

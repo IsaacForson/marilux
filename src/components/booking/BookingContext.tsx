@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -11,6 +12,12 @@ import {
 import { SPECIALISTS } from '@/lib/data/team';
 import type { BookingDraft } from '@/lib/booking/types';
 import type { ClientCategory, ClientService } from '@/lib/catalogue/shape';
+import {
+  autoDiscount,
+  pickDiscount,
+  type AppliedDiscount,
+  type PublicOffer,
+} from '@/lib/catalogue/offers';
 
 export const STEPS = [
   { id: 'category', label: 'Category', title: 'Where shall we begin?' },
@@ -40,15 +47,22 @@ type BookingContextValue = {
   catalogue: ClientCategory[];
   /** Deposit percentage, as configured by the studio. */
   depositPercent: number;
+  /** Automatic studio offers (no code required). */
+  offers: PublicOffer[];
   resolved: {
     category?: ClientCategory;
     service?: ClientService;
     specialistName?: string;
+    /** Treatment price after any validated discount. */
+    total: number;
     deposit: number;
+    balance: number;
   };
-  /** Set once a coupon has been validated by the server. */
-  discount: { code: string; label: string; amount: number } | null;
-  setDiscount: (d: { code: string; label: string; amount: number } | null) => void;
+  /** The discount actually used for totals — automatic or a typed coupon. */
+  discount: AppliedDiscount | null;
+  /** Typed coupon only. Removing it falls back to any automatic offer. */
+  coupon: AppliedDiscount | null;
+  setCoupon: (d: AppliedDiscount | null) => void;
   errors: Record<string, string>;
   setErrors: (errors: Record<string, string>) => void;
 };
@@ -66,28 +80,56 @@ export function BookingProvider({
   initial,
   catalogue,
   depositPercent = 50,
+  offers = [],
 }: {
   children: ReactNode;
   initial?: BookingDraft;
   catalogue: ClientCategory[];
   depositPercent?: number;
+  offers?: PublicOffer[];
 }) {
   const [draft, setDraft] = useState<BookingDraft>(initial ?? { specialistSlug: 'any' });
   const [step, setStep] = useState(() => firstIncompleteStep(initial));
   const [furthest, setFurthest] = useState(step);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [coupon, setCoupon] = useState<AppliedDiscount | null>(null);
+  const [liveOffers, setLiveOffers] = useState(offers);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/promotions/offers')
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled || !Array.isArray(data?.offers)) return;
+        setLiveOffers(data.offers);
+      })
+      .catch(() => {
+        /* Keep whatever the server rendered. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const set = useCallback((patch: BookingDraft) => {
+    let dropCoupon = false;
     setDraft((prev) => {
       const nextDraft = { ...prev, ...patch };
+      const categoryChanged = Boolean(
+        patch.categorySlug && patch.categorySlug !== prev.categorySlug,
+      );
+      const serviceChanged = Boolean(
+        patch.serviceSlug && patch.serviceSlug !== prev.serviceSlug,
+      );
       // Changing the category invalidates everything chosen beneath it.
-      if (patch.categorySlug && patch.categorySlug !== prev.categorySlug) {
+      if (categoryChanged) {
         nextDraft.serviceSlug = undefined;
         nextDraft.specialistSlug = 'any';
         nextDraft.time = undefined;
+        nextDraft.promoCode = undefined;
       }
       // A different service means a different duration, so the slot must go.
-      if (patch.serviceSlug && patch.serviceSlug !== prev.serviceSlug) {
+      if (serviceChanged) {
         nextDraft.time = undefined;
         // A coupon validated against one treatment must not silently carry to
         // another it may not apply to.
@@ -99,14 +141,29 @@ export function BookingProvider({
       if (patch.date && patch.date !== prev.date) {
         nextDraft.time = undefined;
       }
+      dropCoupon =
+        categoryChanged || serviceChanged || ('promoCode' in patch && !patch.promoCode);
       return nextDraft;
     });
+    if (dropCoupon) setCoupon(null);
     setErrors({});
   }, []);
 
-  const [discount, setDiscount] = useState<
-    { code: string; label: string; amount: number } | null
-  >(null);
+  const discount = useMemo(() => {
+    const categorySlug = draft.categorySlug;
+    const serviceSlug = draft.serviceSlug;
+    const category = categorySlug
+      ? catalogue.find((c) => c.slug === categorySlug)
+      : undefined;
+    const service = serviceSlug
+      ? category?.services.find((s) => s.slug === serviceSlug)
+      : undefined;
+    if (!categorySlug || !serviceSlug || !service) return null;
+    return pickDiscount(
+      autoDiscount(liveOffers, categorySlug, serviceSlug, service.price),
+      coupon,
+    );
+  }, [draft.categorySlug, draft.serviceSlug, catalogue, liveOffers, coupon]);
 
   const resolved = useMemo(() => {
     const category = draft.categorySlug
@@ -121,11 +178,14 @@ export function BookingProvider({
         : SPECIALISTS.find((s) => s.slug === draft.specialistSlug)?.name;
 
     const payable = service ? Math.max(0, service.price - (discount?.amount ?? 0)) : 0;
+    const deposit = Math.round((payable * depositPercent) / 100);
     return {
       category,
       service,
       specialistName,
-      deposit: Math.round((payable * depositPercent) / 100),
+      total: payable,
+      deposit,
+      balance: Math.max(0, payable - deposit),
     };
   }, [draft.categorySlug, draft.serviceSlug, draft.specialistSlug, catalogue, discount, depositPercent]);
 
@@ -159,8 +219,10 @@ export function BookingProvider({
       setErrors,
       catalogue,
       depositPercent,
+      offers: liveOffers,
       discount,
-      setDiscount,
+      coupon,
+      setCoupon,
     }),
     [
       draft,
@@ -175,7 +237,9 @@ export function BookingProvider({
       errors,
       catalogue,
       depositPercent,
+      liveOffers,
       discount,
+      coupon,
     ],
   );
 

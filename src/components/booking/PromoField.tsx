@@ -8,12 +8,11 @@ import { GHS } from '@/lib/utils';
 /**
  * Coupon entry.
  *
- * The server recalculates the discount when the booking is submitted, so this
- * is a preview rather than the authority — a tampered response cannot change
- * what the client is actually charged.
+ * Automatic studio offers apply on their own and are not removed from here.
+ * The server recalculates the winning discount when the booking is submitted.
  */
 export default function PromoField() {
-  const { draft, set, resolved, discount, setDiscount } = useBooking();
+  const { draft, set, resolved, discount, coupon, setCoupon } = useBooking();
   const [code, setCode] = useState(draft.promoCode ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,12 +35,17 @@ export default function PromoField() {
 
       if (!data.ok || !data.code) {
         setError(data.error || 'That code could not be applied.');
-        setDiscount(null);
+        setCoupon(null);
         set({ promoCode: undefined });
         return;
       }
 
-      setDiscount({ code: data.code, label: data.label, amount: data.discount });
+      setCoupon({
+        code: data.code,
+        label: data.label,
+        amount: data.discount,
+        source: 'coupon',
+      });
       set({ promoCode: data.code });
     } catch {
       setError('Could not check that code. Please try again.');
@@ -52,27 +56,42 @@ export default function PromoField() {
 
   function clear() {
     setCode('');
-    setDiscount(null);
+    setCoupon(null);
     set({ promoCode: undefined });
     setError(null);
   }
 
   if (!resolved.service) return null;
 
+  const studioOffer = discount?.source === 'auto' ? discount : null;
+
   return (
     <div className="mt-4 rounded-2xl border border-line p-5 sm:p-6">
+      {studioOffer && (
+        <p className="mb-4 flex items-start gap-2.5 text-sm text-success">
+          <Check className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+          <span>
+            <span className="font-medium">{studioOffer.label}</span> is already on this
+            treatment — {GHS(studioOffer.amount)} off. Deposit and balance use the new total.
+          </span>
+        </p>
+      )}
+
       <p className="eyebrow mb-3 flex items-center gap-2">
         <Tag className="h-3.5 w-3.5 text-accent" strokeWidth={1.5} aria-hidden="true" />
         Promotion code
       </p>
 
-      {discount ? (
+      {coupon ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="flex items-center gap-2.5 text-sm text-success">
             <Check className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
             <span>
-              <span className="font-medium">{discount.label}</span> applied —{' '}
-              {GHS(discount.amount)} off
+              <span className="font-medium">{coupon.label}</span> applied —{' '}
+              {GHS(coupon.amount)} off
+              {discount?.source === 'auto'
+                ? '. The studio offer currently saves more, so that is what we are using.'
+                : ''}
             </span>
           </p>
           <button

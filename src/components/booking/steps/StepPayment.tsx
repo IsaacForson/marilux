@@ -20,7 +20,7 @@ export default function StepPayment({
 }: {
   onComplete: (outcome: SubmitOutcome) => void;
 }) {
-  const { draft, resolved, setErrors } = useBooking();
+  const { draft, resolved, setErrors, depositPercent, discount } = useBooking();
   const [provider, setProvider] = useState<PaymentProviderId>('paystack');
   const [state, setState] = useState<'idle' | 'submitting' | 'redirecting'>('idle');
   const [message, setMessage] = useState<string | null>(null);
@@ -98,8 +98,16 @@ export default function StepPayment({
           {GHS(resolved.deposit)}
         </p>
         <p className="mt-4 text-sm text-ivory/50">
-          50% of {GHS(resolved.service?.price ?? 0)} — the balance is settled in studio.
+          {depositPercent}% of {GHS(resolved.total)}
+          {discount ? ' after the offer' : ''} — the balance of {GHS(resolved.balance)} is
+          settled in studio.
         </p>
+        {discount && (
+          <p className="mt-3 text-sm text-success">
+            {discount.label} applied — {GHS(discount.amount)} off. Deposit and balance are taken
+            from the new total.
+          </p>
+        )}
       </div>
 
       <fieldset className="mb-8">

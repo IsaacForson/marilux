@@ -3,6 +3,7 @@ import { Clock, MessageCircle, ShieldCheck } from 'lucide-react';
 import { buildMetadata } from '@/lib/seo';
 import { getCatalogue } from '@/lib/catalogue';
 import { toClientCatalogue } from '@/lib/catalogue/shape';
+import { listActiveOffers } from '@/lib/catalogue/promotions';
 import { getSetting } from '@/lib/settings/store';
 import { SITE, whatsappLink } from '@/lib/data/site';
 import type { BookingDraft } from '@/lib/booking/types';
@@ -36,9 +37,10 @@ export default async function BookingPage({
 }) {
   const params = await searchParams;
 
-  const [categories, bookingSettings] = await Promise.all([
+  const [categories, bookingSettings, offers] = await Promise.all([
     getCatalogue(),
     getSetting('booking'),
+    listActiveOffers(),
   ]);
   const catalogue = toClientCatalogue(categories);
 
@@ -87,6 +89,7 @@ export default async function BookingPage({
             initial={initial}
             catalogue={catalogue}
             depositPercent={bookingSettings.depositPercent}
+            offers={offers}
           />
         ) : (
           <div className="glass rounded-[1.75rem] px-7 py-14 text-center sm:px-12">

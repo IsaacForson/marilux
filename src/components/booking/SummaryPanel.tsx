@@ -6,7 +6,7 @@ import { useBooking } from './BookingContext';
 
 /** Running order, always visible so the guest never loses the thread. */
 export default function SummaryPanel() {
-  const { draft, resolved } = useBooking();
+  const { draft, resolved, discount } = useBooking();
   const { service, category } = resolved;
 
   if (!category) {
@@ -52,19 +52,47 @@ export default function SummaryPanel() {
 
         {service && (
           <div className="mt-6 space-y-3 border-t border-line pt-5">
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between gap-3">
               <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/30">
-                Total
+                Treatment
               </span>
-              <span className="font-display text-lg text-ivory">{formatPrice(service)}</span>
+              <span
+                className={
+                  'font-display text-lg ' + (discount ? 'text-ivory/35 line-through' : 'text-ivory')
+                }
+              >
+                {formatPrice(service)}
+              </span>
             </div>
+            {discount && (
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="min-w-0 font-sans text-2xs uppercase tracking-luxe text-success">
+                  {discount.label}
+                </span>
+                <span className="shrink-0 font-display text-sm text-success">
+                  − {GHS(discount.amount)}
+                </span>
+              </div>
+            )}
+            {discount && (
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/30">
+                  New total
+                </span>
+                <span className="font-display text-lg text-ivory">{GHS(resolved.total)}</span>
+              </div>
+            )}
             <div className="flex items-baseline justify-between">
               <span className="font-sans text-2xs uppercase tracking-luxe text-accent">
                 Deposit now
               </span>
-              <span className="font-display text-xl text-accent">
-                {GHS(resolved.deposit)}
+              <span className="font-display text-xl text-accent">{GHS(resolved.deposit)}</span>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="font-sans text-2xs uppercase tracking-luxe text-ivory/30">
+                Balance in studio
               </span>
+              <span className="font-display text-sm text-ivory/70">{GHS(resolved.balance)}</span>
             </div>
           </div>
         )}

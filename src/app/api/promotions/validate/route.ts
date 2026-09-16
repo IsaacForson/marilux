@@ -49,12 +49,12 @@ export async function POST(req: Request) {
   });
 
   return NextResponse.json({
-    ok: !discount.error,
+    ok: Boolean(discount.coupon),
     error: discount.error,
     price: resolved.service.price,
-    discount: discount.amount,
+    discount: discount.coupon?.amount ?? 0,
     finalPrice: discount.finalPrice,
-    label: discount.promotion?.label ?? null,
-    code: discount.promotion?.code ?? null,
+    label: discount.coupon?.label ?? null,
+    code: discount.coupon?.code ?? null,
   });
 }

@@ -1,5 +1,7 @@
 import 'server-only';
+import { cache } from 'react';
 import { db, dbConfigured, queryOrNull } from '@/lib/store/db';
+import type { PublicOffer } from './offers';
 
 /**
  * Discounts, promotions and coupon codes.
@@ -67,7 +69,7 @@ const toPromotion = (r: Row): Promotion => ({
   createdAt: new Date(r.created_at).toISOString(),
 });
 
-export async function listPromotions(): Promise<Promotion[]> {
+export const listPromotions = cache(async (): Promise<Promotion[]> => {
   if (!dbConfigured()) return [];
   const sql = db();
   const rows = await queryOrNull(
@@ -77,13 +79,34 @@ export async function listPromotions(): Promise<Promotion[]> {
         select * from public.promotions order by is_active desc, created_at desc`,
   );
   return rows ? rows.map(toPromotion) : [];
-}
+});
 
 /** Live automatic promotions — no code required, shown on the site. */
-export async function activeAutoPromotions(): Promise<Promotion[]> {
-  const all = await listPromotions();
-  return all.filter((p) => !p.code && isLive(p));
-}
+export const activeAutoPromotions = cache(async (): Promise<Promotion[]> => {
+  if (!dbConfigured()) return [];
+  const sql = db();
+  const rows = await queryOrNull(
+    'promotions',
+    () =>
+      sql<Row[]>`
+        select * from public.promotions
+        where is_active = true and code is null
+        order by created_at desc`,
+  );
+  return rows ? rows.map(toPromotion).filter((p) => isLive(p)) : [];
+});
+
+/** Automatic offers the booking flow can apply as soon as a treatment is chosen. */
+export const listActiveOffers = cache(async (): Promise<PublicOffer[]> => {
+  return (await activeAutoPromotions()).map((p) => ({
+    label: p.label,
+    kind: p.kind,
+    value: p.value,
+    scope: p.scope,
+    scopeValue: p.scopeValue,
+    minSpend: p.minSpend,
+  }));
+});
 
 function isLive(p: Promotion, now = new Date()) {
   if (!p.isActive) return false;
@@ -106,6 +129,8 @@ export type DiscountResult = {
   promotion: Promotion | null;
   /** Populated when a typed code could not be used. */
   error?: string;
+  /** Present when a typed code was valid, even if an automatic offer won. */
+  coupon?: { code: string; label: string; amount: number } | null;
 };
 
 /**
@@ -138,6 +163,7 @@ export async function calculateDiscount({
   candidates.push(...auto);
 
   let couponError: string | undefined;
+  let validCoupon: Promotion | undefined;
   if (code?.trim()) {
     const wanted = code.trim().toLowerCase();
     const coupon = all.find((p) => p.code?.toLowerCase() === wanted);
@@ -154,10 +180,21 @@ export async function calculateDiscount({
       couponError = 'That code does not apply to this treatment.';
     else if (price < coupon.minSpend)
       couponError = 'That code needs a minimum spend of GHS ' + coupon.minSpend + '.';
-    else candidates.push(coupon);
+    else {
+      candidates.push(coupon);
+      validCoupon = coupon;
+    }
   }
 
-  if (candidates.length === 0) return { ...none, error: couponError };
+  const couponInfo = validCoupon?.code
+    ? {
+        code: validCoupon.code,
+        label: validCoupon.label,
+        amount: amountFor(validCoupon, price),
+      }
+    : null;
+
+  if (candidates.length === 0) return { ...none, error: couponError, coupon: couponInfo };
 
   const best = candidates
     .map((p) => ({ promotion: p, amount: amountFor(p, price) }))
@@ -169,6 +206,7 @@ export async function calculateDiscount({
     finalPrice: price - amount,
     promotion: best.promotion,
     error: couponError,
+    coupon: couponInfo,
   };
 }
 

@@ -35,7 +35,7 @@ function connectionUrl() {
 const isBuild = () => process.env.NEXT_PHASE === 'phase-production-build';
 
 /** Bump when the postgres client options or package version change, so HMR replaces the pool. */
-const POOL_VERSION = '3.4.9';
+const POOL_VERSION = '3.4.9-recycle';
 
 export function db() {
   const url = process.env.DATABASE_URL;

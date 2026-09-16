@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { BEZIER } from '@/lib/motion';
 import type { BookingDraft } from '@/lib/booking/types';
 import type { ClientCategory } from '@/lib/catalogue/shape';
+import type { PublicOffer } from '@/lib/catalogue/offers';
 import { BookingProvider, STEPS, useBooking } from './BookingContext';
 import ProgressRail from './ProgressRail';
 import SummaryPanel from './SummaryPanel';
@@ -24,16 +25,19 @@ export default function BookingFlow({
   initial,
   catalogue,
   depositPercent,
+  offers,
 }: {
   initial?: BookingDraft;
   catalogue: ClientCategory[];
   depositPercent: number;
+  offers: PublicOffer[];
 }) {
   return (
     <BookingProvider
       initial={initial}
       catalogue={catalogue}
       depositPercent={depositPercent}
+      offers={offers}
     >
       <FlowInner />
     </BookingProvider>
