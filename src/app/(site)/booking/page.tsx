@@ -53,9 +53,9 @@ export default async function BookingPage({
       : undefined;
 
   const initial: BookingDraft = {
-    categorySlug: category?.slug,
-    serviceSlug: service?.slug,
-    specialistSlug: params.specialist || 'any',
+    ...(category ? { categorySlug: category.slug } : {}),
+    ...(service ? { serviceSlug: service.slug } : {}),
+    ...(params.specialist ? { specialistSlug: params.specialist } : {}),
   };
 
   return (

@@ -20,7 +20,7 @@ export default function StepPayment({
 }: {
   onComplete: (outcome: SubmitOutcome) => void;
 }) {
-  const { draft, resolved, setErrors, depositPercent, discount } = useBooking();
+  const { draft, resolved, setErrors, depositPercent, discount, releaseDraft } = useBooking();
   const [provider, setProvider] = useState<PaymentProviderId>('paystack');
   const [state, setState] = useState<'idle' | 'submitting' | 'redirecting'>('idle');
   const [message, setMessage] = useState<string | null>(null);
@@ -55,6 +55,7 @@ export default function StepPayment({
       // 2. Start the deposit. If no gateway is configured yet, the booking
       //    still stands and the studio sends a payment link by WhatsApp.
       setState('redirecting');
+      releaseDraft();
       const pay = await fetch('/api/payments/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

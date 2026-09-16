@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { BEZIER } from '@/lib/motion';
@@ -10,6 +11,7 @@ import type { PublicOffer } from '@/lib/catalogue/offers';
 import { BookingProvider, STEPS, useBooking } from './BookingContext';
 import ProgressRail from './ProgressRail';
 import SummaryPanel from './SummaryPanel';
+import LeaveBookingModal from './LeaveBookingModal';
 import StepCategory from './steps/StepCategory';
 import StepService from './steps/StepService';
 import StepSpecialist from './steps/StepSpecialist';
@@ -45,10 +47,72 @@ export default function BookingFlow({
 }
 
 function FlowInner() {
-  const { step, next, back, canAdvance, draft, resolved, setErrors } = useBooking();
+  const { step, next, back, canAdvance, draft, resolved, setErrors, hasProgress, releaseDraft } =
+    useBooking();
+  const router = useRouter();
   const [outcome, setOutcome] = useState<SubmitOutcome | null>(null);
+  const [leaveTo, setLeaveTo] = useState<string | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
+
+  useEffect(() => {
+    if (outcome) releaseDraft();
+  }, [outcome, releaseDraft]);
+
+  useEffect(() => {
+    if (!hasProgress || outcome) return;
+
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest('a[href]');
+      if (!(link instanceof HTMLAnchorElement)) return;
+      if (link.target === '_blank' || link.hasAttribute('download')) return;
+
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#') || /^(mailto:|tel:|sms:|javascript:)/i.test(href)) {
+        return;
+      }
+
+      let url: URL;
+      try {
+        url = new URL(href, window.location.href);
+      } catch {
+        return;
+      }
+
+      if (url.origin === window.location.origin) {
+        if (url.pathname === '/booking' || url.pathname.startsWith('/booking/')) return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+      setLeaveTo(url.href);
+    };
+
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, [hasProgress, outcome]);
+
+  const stay = useCallback(() => setLeaveTo(null), []);
+  const leave = () => {
+    if (!leaveTo) return;
+    const href = leaveTo;
+    setLeaveTo(null);
+    releaseDraft();
+    try {
+      const url = new URL(href, window.location.href);
+      if (url.origin === window.location.origin) {
+        router.push(url.pathname + url.search + url.hash);
+        return;
+      }
+    } catch {
+      /* fall through */
+    }
+    window.location.assign(href);
+  };
 
   // Bring the new step into view on mobile, where the panel sits below the rail.
   useEffect(() => {
@@ -107,7 +171,8 @@ function FlowInner() {
   };
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[13rem,minmax(0,1fr),18rem] lg:gap-12 xl:gap-16">
+    <>
+      <div className="grid gap-10 lg:grid-cols-[13rem,minmax(0,1fr),18rem] lg:gap-12 xl:gap-16">
       {/* Rail */}
       <div className="lg:sticky lg:top-32 lg:self-start">
         <ProgressRail />
@@ -189,5 +254,8 @@ function FlowInner() {
         <SummaryPanel />
       </aside>
     </div>
+
+      <LeaveBookingModal open={Boolean(leaveTo)} onStay={stay} onLeave={leave} />
+    </>
   );
 }
