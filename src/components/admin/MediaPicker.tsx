@@ -6,6 +6,7 @@ import { Check, ImagePlus, Loader2, Trash2, Upload, X } from 'lucide-react';
 import type { MediaRecord } from '@/lib/media/storage';
 import { BEZIER } from '@/lib/motion';
 import { cn } from '@/lib/utils';
+import ConfirmBar from './ConfirmBar';
 
 /**
  * Choose or upload an image.
@@ -90,6 +91,9 @@ function Library({
   const [error, setError] = useState<string | null>(null);
   const [backend, setBackend] = useState<string>('');
   const [urlInput, setUrlInput] = useState('');
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; url: string } | null>(
+    null,
+  );
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -149,14 +153,13 @@ function Library({
     setBusy(false);
   }
 
-  async function remove(id: string, url: string) {
-    if (!window.confirm('Delete this image? Anywhere it is used will fall back to the default.')) {
-      return;
-    }
+  async function confirmRemove() {
+    if (!pendingDelete) return;
     setBusy(true);
-    await fetch('/api/admin/media?id=' + id, { method: 'DELETE' });
-    setItems((prev) => (prev ?? []).filter((m) => m.id !== id));
-    if (current === url) onPick(null);
+    await fetch('/api/admin/media?id=' + pendingDelete.id, { method: 'DELETE' });
+    setItems((prev) => (prev ?? []).filter((m) => m.id !== pendingDelete.id));
+    if (current === pendingDelete.url) onPick(null);
+    setPendingDelete(null);
     setBusy(false);
   }
 
@@ -306,7 +309,7 @@ function Library({
 
                     <button
                       type="button"
-                      onClick={() => remove(m.id, m.url)}
+                      onClick={() => setPendingDelete({ id: m.id, url: m.url })}
                       aria-label={'Delete ' + m.filename}
                       className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full border border-line-2 bg-ink/70 text-ivory/50 opacity-0 backdrop-blur-md transition-all focus-visible:opacity-100 group-hover:opacity-100 hover:border-danger/60 hover:text-danger"
                     >
@@ -322,6 +325,15 @@ function Library({
             </ul>
           )}
         </div>
+
+        <ConfirmBar
+          open={Boolean(pendingDelete)}
+          message="Delete this image? Anywhere it is used will fall back to the default."
+          confirming={busy}
+          className="mx-4 mb-4 mt-0"
+          onConfirm={confirmRemove}
+          onCancel={() => setPendingDelete(null)}
+        />
       </motion.div>
     </motion.div>
   );

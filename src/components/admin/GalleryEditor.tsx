@@ -7,6 +7,7 @@ import { GALLERY_FILTERS } from '@/lib/data/gallery';
 import { cn } from '@/lib/utils';
 import { Panel, Select, TextArea, TextInput, Toggle } from './Form';
 import MediaPicker from './MediaPicker';
+import ConfirmBar from './ConfirmBar';
 
 export type AdminGalleryItem = {
   dbId?: string;
@@ -57,6 +58,9 @@ export default function GalleryEditor({
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(
+    null,
+  );
 
   const patch = (p: Partial<Draft>) => {
     setDraft((d) => (d ? { ...d, ...p } : d));
@@ -87,10 +91,11 @@ export default function GalleryEditor({
     }
   }
 
-  async function remove(id: string, title: string) {
-    if (!window.confirm('Remove "' + title + '" from the gallery?')) return;
+  async function confirmRemove() {
+    if (!pendingDelete) return;
     setBusy(true);
-    await fetch('/api/admin/gallery?id=' + id, { method: 'DELETE' });
+    await fetch('/api/admin/gallery?id=' + pendingDelete.id, { method: 'DELETE' });
+    setPendingDelete(null);
     router.refresh();
     setBusy(false);
   }
@@ -369,7 +374,9 @@ export default function GalleryEditor({
                     </button>
                     <button
                       type="button"
-                      onClick={() => remove(item.dbId as string, item.title)}
+                      onClick={() =>
+                        setPendingDelete({ id: item.dbId as string, title: item.title })
+                      }
                       disabled={busy}
                       aria-label={'Delete ' + item.title}
                       className="grid h-9 w-9 place-items-center rounded-lg border border-line text-ivory/40 transition-colors hover:border-danger/50 hover:text-danger disabled:opacity-40"
@@ -383,6 +390,19 @@ export default function GalleryEditor({
           ))}
         </ul>
       )}
+
+      <ConfirmBar
+        open={Boolean(pendingDelete)}
+        message={
+          pendingDelete
+            ? 'Remove "' + pendingDelete.title + '" from the gallery?'
+            : ''
+        }
+        confirmLabel="Remove"
+        confirming={busy}
+        onConfirm={confirmRemove}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

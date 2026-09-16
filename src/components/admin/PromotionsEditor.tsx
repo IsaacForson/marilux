@@ -7,6 +7,7 @@ import type { Promotion } from '@/lib/catalogue/promotions';
 import type { LiveCategory } from '@/lib/catalogue';
 import { cn, GHS } from '@/lib/utils';
 import { Panel, Select, TextArea, TextInput, Toggle } from './Form';
+import ConfirmBar from './ConfirmBar';
 
 type Draft = {
   id?: string;
@@ -50,6 +51,9 @@ export default function PromotionsEditor({
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; label: string } | null>(
+    null,
+  );
 
   const patch = (p: Partial<Draft>) => {
     setDraft((d) => (d ? { ...d, ...p } : d));
@@ -91,13 +95,12 @@ export default function PromotionsEditor({
     }
   }
 
-  async function remove(id: string, label: string) {
-    if (!window.confirm('Delete "' + label + '"? Bookings that already used it are unaffected.')) {
-      return;
-    }
+  async function confirmRemove() {
+    if (!pendingDelete) return;
     setBusy(true);
     try {
-      await fetch('/api/admin/promotions?id=' + id, { method: 'DELETE' });
+      await fetch('/api/admin/promotions?id=' + pendingDelete.id, { method: 'DELETE' });
+      setPendingDelete(null);
       router.refresh();
     } finally {
       setBusy(false);
@@ -375,7 +378,7 @@ export default function PromotionsEditor({
                     </button>
                     <button
                       type="button"
-                      onClick={() => remove(p.id, p.label)}
+                      onClick={() => setPendingDelete({ id: p.id, label: p.label })}
                       disabled={busy}
                       aria-label={'Delete ' + p.label}
                       className="grid h-9 w-9 place-items-center rounded-full border border-line-2 text-ivory/40 transition-colors hover:border-danger/50 hover:text-danger disabled:opacity-40"
@@ -389,6 +392,18 @@ export default function PromotionsEditor({
           })}
         </ul>
       )}
+
+      <ConfirmBar
+        open={Boolean(pendingDelete)}
+        message={
+          pendingDelete
+            ? 'Delete "' + pendingDelete.label + '"? Bookings that already used it are unaffected.'
+            : ''
+        }
+        confirming={busy}
+        onConfirm={confirmRemove}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

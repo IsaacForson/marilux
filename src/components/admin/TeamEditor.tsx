@@ -7,6 +7,7 @@ import type { AdminUser } from '@/lib/admin/users';
 import { cn } from '@/lib/utils';
 import { Panel, Select, TextInput, Toggle } from './Form';
 import PasswordInput from './PasswordInput';
+import ConfirmBar from './ConfirmBar';
 
 export default function TeamEditor({
   users,
@@ -23,6 +24,7 @@ export default function TeamEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
 
   const isOwner = bootstrap || me?.role === 'owner';
   const first = users.length === 0;
@@ -73,16 +75,15 @@ export default function TeamEditor({
     }
   }
 
-  async function remove(user: AdminUser) {
-    if (!window.confirm('Remove ' + user.name + "'s account? They lose access immediately.")) {
-      return;
-    }
+  async function confirmRemove() {
+    if (!pendingDelete) return;
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/users?id=' + user.id, { method: 'DELETE' });
+      const res = await fetch('/api/admin/users?id=' + pendingDelete.id, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || 'Could not remove that account.');
+      setPendingDelete(null);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not remove that account.');
@@ -279,7 +280,7 @@ export default function TeamEditor({
                         />
                         <button
                           type="button"
-                          onClick={() => remove(u)}
+                          onClick={() => setPendingDelete(u)}
                           disabled={busy}
                           aria-label={'Remove ' + u.name}
                           className="grid h-9 w-9 place-items-center rounded-full border border-line-2 text-ivory/40 transition-colors hover:border-danger/50 hover:text-danger disabled:opacity-40"
@@ -295,6 +296,19 @@ export default function TeamEditor({
           })}
         </ul>
       )}
+
+      <ConfirmBar
+        open={Boolean(pendingDelete)}
+        message={
+          pendingDelete
+            ? 'Remove ' + pendingDelete.name + "'s account? They lose access immediately."
+            : ''
+        }
+        confirmLabel="Remove"
+        confirming={busy}
+        onConfirm={confirmRemove}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }
