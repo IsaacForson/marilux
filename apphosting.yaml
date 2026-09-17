@@ -1,0 +1,58 @@
+# Firebase App Hosting — Next.js on Cloud Run.
+# Secrets live in Cloud Secret Manager; this file is safe to commit.
+
+runConfig:
+  minInstances: 0
+  maxInstances: 8
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 1024
+
+env:
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://mariluxbeautybar.com
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: ADMIN_PASSWORD
+    secret: ADMIN_PASSWORD
+
+  - variable: ADMIN_SESSION_SECRET
+    secret: ADMIN_SESSION_SECRET
+
+  - variable: DATABASE_URL
+    secret: DATABASE_URL
+
+  - variable: SMTP_HOST
+    secret: SMTP_HOST
+
+  - variable: SMTP_PORT
+    secret: SMTP_PORT
+
+  - variable: SMTP_USER
+    secret: SMTP_USER
+
+  - variable: SMTP_PASSWORD
+    secret: SMTP_PASSWORD
+
+  - variable: SMTP_FROM
+    secret: SMTP_FROM
+
+  - variable: OWNER_EMAIL
+    secret: OWNER_EMAIL
+
+  - variable: OWNER_SMS
+    secret: OWNER_SMS
+
+  - variable: BREVO_API_KEY
+    secret: BREVO_API_KEY
+
+  - variable: SUPABASE_URL
+    secret: SUPABASE_URL
+
+  - variable: SUPABASE_BUCKET
+    secret: SUPABASE_BUCKET
+
+  - variable: SUPABASE_SECRET_KEY
+    secret: SUPABASE_SECRET_KEY
